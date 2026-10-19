@@ -2,27 +2,43 @@
 
 A personal, local-first workspace for C++ / Python learners: paste a LeetCode
 problem, get step-by-step guidance, try solutions in the editor, and keep your
-learning log and review notes.
+learning log and review notes. 知序 · 让思路先于答案。
 
 [![CI](https://github.com/baiyujing-rain/zhixu/actions/workflows/ci.yml/badge.svg)](https://github.com/baiyujing-rain/zhixu/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+An ink-wash "algorithm study" — paste a problem, walk the guided path from
+reading the question to your own solution, with deterministic algorithm
+animations along the way.
+
+![Zhixu home — ink-wash algorithm study](docs/images/home.png)
 
 ## Features
 
 - **Four-layer hints** — understanding → naive idea → key insight → pseudocode,
   tuned to your language, foundation, and explanation preferences.
 - **Three-pane workbench** with a local Monaco editor, C++ / Python drafts,
-  dark mode, and resizable panels.
+  dark mode, and resizable panels:
+
+  ![Workbench — BFS animation, problem pane, and code editor](docs/images/workbench-bfs.png)
+
 - **Deterministic algorithm demo** — ten classic algorithms rendered
   step-by-step (two pointers, binary search, bracket stack, climbing-stairs DP,
   sliding window, BFS shortest path, merge sort, quick sort, interval greedy).
-  No backend or AI required.
+  No backend or AI required:
+
+  ![Algorithm demo — climbing-stairs DP animation](docs/images/algorithm-demo-dp.png)
+
 - **Static demo page** — the same algorithm logic, shipped as a standalone
   zero-dependency page (see Demo below).
 - **Solution optimization & complexity analysis**, review scheduling (spaced
   repetition), auto-save, JSON backup/restore, and SQLite persistence.
 - **Bring your own model** — ChatGPT sign-in, DeepSeek (web transfer or API),
   or any OpenAI Chat Completions-compatible endpoint.
+
+<p align="center">
+  <img src="docs/images/home-dark-mobile.png" alt="Dark mode, mobile layout" width="280" />
+</p>
 
 ## Demo
 
