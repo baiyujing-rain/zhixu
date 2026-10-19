@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+# The test suite imports the application with absolute imports
+# (`from backend import main`), so the repository root must be on sys.path.
+# `pythonpath` keeps this consistent across local runs and CI (where pytest's
+# rootdir detection differs from Windows).
+pythonpath = ["."]
+testpaths = ["backend/tests"]
