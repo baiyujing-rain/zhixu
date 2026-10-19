@@ -297,3 +297,5 @@ select:focus, input:focus, textarea:focus { outline: none; border-color: var(--a
 }
 
 /* build marker: pages skip-on-private verification */
+
+/* trigger pages after enabling source */
