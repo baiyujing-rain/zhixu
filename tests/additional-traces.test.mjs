@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTrace, DEFAULT_INPUTS, coreCode, slidingWindow, breadthFirst, parseGrid, mergeSort, quickSort, intervalGreedy, parseIntervals, hashTwoSum } from '@zhixu/algo-viz';
+import { buildTrace, DEFAULT_INPUTS, coreCode, slidingWindow, breadthFirst, parseGrid, mergeSort, quickSort, intervalGreedy, parseIntervals, hashTwoSum } from 'zhixu-algo-viz';
 
 function codeLines(trace) {
   for (const language of ['cpp', 'python']) {

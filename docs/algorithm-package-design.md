@@ -37,7 +37,7 @@
 **推荐：方案 A（npm workspaces，非 pnpm）**。理由：
 
 1. 项目已经用 npm（`package-lock.json` lockfileVersion 3 支持 workspaces），**零包管理器迁移成本**；
-2. 把三个源文件**物理移入** `packages/algo-viz/src/`，主应用改 import 为 `@zhixu/algo-viz`，`lib/` 下旧文件删除 —— **单一事实来源，彻底避免双重维护**；
+2. 把三个源文件**物理移入** `packages/algo-viz/src/`，主应用改 import 为 `zhixu-algo-viz`，`lib/` 下旧文件删除 —— **单一事实来源，彻底避免双重维护**；
 3. 包拥有独立 `package.json`/`tsconfig.json`/构建脚本，可独立 `build`/`test`/`npm publish`，满足"独立 npm 包"的真实语义；
 4. 静态 demo 也改为消费包，`window.ZhixuAlgos` 与主应用、与外部消费者三者同源。
 
@@ -47,19 +47,19 @@
 
 | 难点 | 选型 | 理由 |
 |------|------|------|
-| 包结构 | npm workspaces（根 `workspaces: ["packages/*"]`） | 项目已用 npm，零迁移；`npm install` 自动 symlink 到 `node_modules/@zhixu/algo-viz` |
+| 包结构 | npm workspaces（根 `workspaces: ["packages/*"]`） | 项目已用 npm，零迁移；`npm install` 自动 symlink 到 `node_modules/zhixu-algo-viz` |
 | 运行时产物（ESM + CJS） | **esbuild**（已存在于 devDependencies） | 三文件零运行时依赖，esbuild 单次 bundle 出 `index.mjs` + `index.cjs`，快且自包含；且 P0 已验证 esbuild 可打包 |
 | 类型产物（.d.ts） | **tsc**（`declaration + emitDeclarationOnly`） | esbuild 不产出类型；用 tsc 从统一入口 `src/index.ts` 产出 `.d.ts`，保证类型与实现同源、不手写 |
-| 主应用消费 | 直接依赖 `@zhixu/algo-viz`，Next 消费预构建 dist | 包发编译后 JS，Next 无需 `transpilePackages`；根脚本 `predev/prebuild` 先构建包，改包源码自动生效 |
-| 包名 | 首选 `@zhixu/algo-viz`，备选 `zhixu-algo-viz` | 见 1.4 |
+| 主应用消费 | 直接依赖 `zhixu-algo-viz`，Next 消费预构建 dist | 包发编译后 JS，Next 无需 `transpilePackages`；根脚本 `predev/prebuild` 先构建包，改包源码自动生效 |
+| 包名 | 首选 `zhixu-algo-viz`，备选 `zhixu-algo-viz` | 见 1.4 |
 
 **为什么 esbuild + tsc 配合，而不是二选一**：esbuild 负责"运行时代码"（ESM/CJS 双格式、minify、sourcemap），tsc 负责"类型声明"。二者都从同一个 `src/index.ts` 入口产出，`npm run build` 一条命令串起来，避免手写/复制 `.d.ts` 导致类型漂移。
 
 #### 1.4 包名决策
 
-- **首选 `@zhixu/algo-viz`**：语义清晰、与品牌一致、为未来扩展留空间（`@zhixu/core`、`@zhixu/ui`…）。**前提**：用户在 npm 上拥有/愿意创建 `@zhixu` scope（scoped 包需 scope 所有权）。
+- **首选 `zhixu-algo-viz`**：语义清晰、与品牌一致、为未来扩展留空间（`@zhixu/core`、`@zhixu/ui`…）。**前提**：用户在 npm 上拥有/愿意创建 `@zhixu` scope（scoped 包需 scope 所有权）。
 - **备选 `zhixu-algo-viz`**：无需建 scope，只需该裸名未被占用（`npm view zhixu-algo-viz` 查）。
-- 本方案正文一律以 `@zhixu/algo-viz` 为工作名；若最终用备选名，全局替换包名与 import 即可，其余结构不变。
+- 本方案正文一律以 `zhixu-algo-viz` 为工作名；若最终用备选名，全局替换包名与 import 即可，其余结构不变。
 
 > 发布时注意：scoped 包默认 `--access restricted`（私有），需 `--access public` 才能公开；本方案在 `publishConfig.access` 预置为 `public`，但**是否真的 publish 由用户后续决定**。
 
@@ -83,13 +83,13 @@ packages/algo-viz/README.md                  # 公共 API 说明（真实 npm �
 #### 修改文件
 
 ```
-package.json                                  # 加 workspaces、@zhixu/algo-viz 依赖、predev/prebuild 等脚本
+package.json                                  # 加 workspaces、zhixu-algo-viz 依赖、predev/prebuild 等脚本
 tsconfig.json                                 # exclude 增加 packages/**，避免根 typecheck 重复处理包
 .gitignore                                    # 忽略 packages/*/dist
-components/algorithm-demo.tsx                 # import 切换到 @zhixu/algo-viz
-components/algorithm-lab.tsx                  # import 切换到 @zhixu/algo-viz
-components/additional-scenes.tsx              # import type Frame/Trace 切换到 @zhixu/algo-viz
-demo/demo-entry.ts                            # re-export 源切换到 @zhixu/algo-viz
+components/algorithm-demo.tsx                 # import 切换到 zhixu-algo-viz
+components/algorithm-lab.tsx                  # import 切换到 zhixu-algo-viz
+components/additional-scenes.tsx              # import type Frame/Trace 切换到 zhixu-algo-viz
+demo/demo-entry.ts                            # re-export 源切换到 zhixu-algo-viz
 tests/algorithm-traces.test.mjs               # 由编译 lib 产物改为 import 包
 tests/additional-traces.test.mjs              # 同上
 scripts/verify-demo-code.mjs                  # 同上
@@ -257,7 +257,7 @@ export type { PracticePrompt, AlgorithmEntry } from './algorithm-catalog';
 
 ```json
 {
-  "name": "@zhixu/algo-viz",
+  "name": "zhixu-algo-viz",
   "version": "0.1.0",
   "description": "智序 · 算法演示教学轨迹引擎（纯 TypeScript，零运行时依赖）",
   "license": "MIT",
@@ -344,7 +344,7 @@ await build({ ...shared, format: 'cjs', outfile: 'dist/index.cjs' });
 ```mermaid
 sequenceDiagram
     participant Consumer as 主应用 / 静态 demo
-    participant Package as @zhixu/algo-viz (dist/index.mjs)
+    participant Package as zhixu-algo-viz (dist/index.mjs)
     participant Traces as src/algorithm-traces.ts
     participant Extra as src/additional-traces.ts
     participant Catalog as src/algorithm-catalog.ts
@@ -367,7 +367,7 @@ sequenceDiagram
     Catalog-->>Consumer: AlgorithmEntry[]
 ```
 
-#### 4.2 构建：`npm run build -w @zhixu/algo-viz`
+#### 4.2 构建：`npm run build -w zhixu-algo-viz`
 
 ```mermaid
 sequenceDiagram
@@ -386,7 +386,7 @@ sequenceDiagram
 
 ### 5. Anything UNCLEAR（待确认 / 假设）
 
-1. **包名与 scope 归属**：`@zhixu` scope 是否已在 npm 注册、由谁持有，未确认；方案默认用 `@zhixu/algo-viz`，若不行回退 `zhixu-algo-viz`（发布阶段再做 `npm view` 查名）。
+1. **包名与 scope 归属**：`@zhixu` scope 是否已在 npm 注册、由谁持有，未确认；方案默认用 `zhixu-algo-viz`，若不行回退 `zhixu-algo-viz`（发布阶段再做 `npm view` 查名）。
 2. **是否真的发布到公共 npm**：本次不发布；用户是否想公开、是否走 GitHub Packages / 私有源，待用户后续拍板。
 3. **主应用是否要"零构建"热更包源码**：当前方案采用 `predev/prebuild` 先构建包，改包源码后需重启 dev（或手动跑一次 build）。若团队强烈需要"改包源码秒级热更"，可再引入 `transpilePackages` + 直接指 `src` 的 dev 通道，P2 再议，本期不做。
 4. **包版本与发版节奏**：首版定为 `0.1.0`；后续是否需要 changesets / 自动发版 CI，未定，本期只用手工 `npm version` + `npm publish` 留口。
@@ -421,13 +421,13 @@ sequenceDiagram
 
 1. 根 `package.json`：
    - 增加 `"workspaces": ["packages/*"]`；
-   - `dependencies` 增加 `"@zhixu/algo-viz": "*"`（npm workspaces 自动 symlink 本地包）；
+   - `dependencies` 增加 `"zhixu-algo-viz": "*"`（npm workspaces 自动 symlink 本地包）；
    - 增加/调整脚本：
-     - `"predev": "npm run build -w @zhixu/algo-viz"`
-     - `"prebuild": "npm run build -w @zhixu/algo-viz"`
-     - `"pretest:algorithms": "npm run build -w @zhixu/algo-viz"`
-     - `"pretest:demo-code": "npm run build -w @zhixu/algo-viz"`
-     - `"typecheck": "npm run build -w @zhixu/algo-viz && tsc --noEmit"`（保证先有 `.d.ts`）
+     - `"predev": "npm run build -w zhixu-algo-viz"`
+     - `"prebuild": "npm run build -w zhixu-algo-viz"`
+     - `"pretest:algorithms": "npm run build -w zhixu-algo-viz"`
+     - `"pretest:demo-code": "npm run build -w zhixu-algo-viz"`
+     - `"typecheck": "npm run build -w zhixu-algo-viz && tsc --noEmit"`（保证先有 `.d.ts`）
 2. `.gitignore` 增加 `packages/*/dist/`。
 3. 新建 `packages/algo-viz/package.json`（字段见 3 节）、`tsconfig.json`、`scripts/build.mjs`。
 
@@ -435,21 +435,21 @@ sequenceDiagram
 
 1. `git mv`（或等效复制后删原）三文件到 `packages/algo-viz/src/`，**内容不改**。
 2. 新建 `src/index.ts`（内容见 3 节），统一 `export type`。
-3. 首次运行 `npm install`（生成 workspace symlink）+ `npm run build -w @zhixu/algo-viz`，确认产出 `dist/index.mjs`、`dist/index.cjs`、`dist/index.d.ts`。
+3. 首次运行 `npm install`（生成 workspace symlink）+ `npm run build -w zhixu-algo-viz`，确认产出 `dist/index.mjs`、`dist/index.cjs`、`dist/index.d.ts`。
 
 #### T03 细节 — 主应用接入
 
-1. `algorithm-demo.tsx`：`import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, type Algorithm, type DemoInput, type Frame, type Trace } from '@zhixu/algo-viz'`。
-2. `algorithm-lab.tsx`：`ALGORITHM_CATALOG`、`ALGORITHMS`、`type Algorithm` 改自 `@zhixu/algo-viz`。
-3. `additional-scenes.tsx`：`import type { Frame, Trace } from '@zhixu/algo-viz'`。
-4. `demo/demo-entry.ts`：re-export 源从 `../lib/...` 改为 `@zhixu/algo-viz`。
+1. `algorithm-demo.tsx`：`import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, type Algorithm, type DemoInput, type Frame, type Trace } from 'zhixu-algo-viz'`。
+2. `algorithm-lab.tsx`：`ALGORITHM_CATALOG`、`ALGORITHMS`、`type Algorithm` 改自 `zhixu-algo-viz`。
+3. `additional-scenes.tsx`：`import type { Frame, Trace } from 'zhixu-algo-viz'`。
+4. `demo/demo-entry.ts`：re-export 源从 `../lib/...` 改为 `zhixu-algo-viz`。
 5. 验证 `npm run build:demo` 仍产出 `demo/algos.js`（`window.ZhixuAlgos`），`demo/demo.js` 无需改。
 
 #### T04 细节 — 测试/校验接入
 
-1. `tests/algorithm-traces.test.mjs`、`tests/additional-traces.test.mjs`：把 `import traceModule from '../artifacts/.../algorithm-traces.js'` 等改为 `import { twoPointers, binarySearch, ... } from '@zhixu/algo-viz'`（ESM 命名导入，来自 `dist/index.mjs`）。
-2. `scripts/verify-demo-code.mjs`：`traceModule`/`extraModule` 两个默认导入改为 `import { coreCode, DEFAULT_INPUTS, parseGrid } from '@zhixu/algo-viz'`。
-3. `scripts/build-demo.mjs`：入口不变；如 esbuild 解析 workspace 包异常，加 `alias: { '@zhixu/algo-viz': './packages/algo-viz/src/index.ts' }`（一般不需要）。
+1. `tests/algorithm-traces.test.mjs`、`tests/additional-traces.test.mjs`：把 `import traceModule from '../artifacts/.../algorithm-traces.js'` 等改为 `import { twoPointers, binarySearch, ... } from 'zhixu-algo-viz'`（ESM 命名导入，来自 `dist/index.mjs`）。
+2. `scripts/verify-demo-code.mjs`：`traceModule`/`extraModule` 两个默认导入改为 `import { coreCode, DEFAULT_INPUTS, parseGrid } from 'zhixu-algo-viz'`。
+3. `scripts/build-demo.mjs`：入口不变；如 esbuild 解析 workspace 包异常，加 `alias: { 'zhixu-algo-viz': './packages/algo-viz/src/index.ts' }`（一般不需要）。
 4. 验证 `npm run test:algorithms`、`npm run test:demo-code` 全绿。
 
 #### T05 细节 — 清理与收口
@@ -457,7 +457,7 @@ sequenceDiagram
 1. 删除 `lib/` 下三个算法文件。
 2. 根 `tsconfig.json` 的 `exclude` 增加 `"packages/**"`（避免根 `tsc --noEmit` 二次处理包源码）。
 3. 新建 `packages/algo-viz/README.md`（公共 API + 用法示例）。
-4. 全量回归：`npm install` → `npm run build -w @zhixu/algo-viz` → `npm run typecheck` → `npm run test:algorithms` → `npm run test:demo-code` → `npm run build:demo` → `npm run build`（`next build`）→ 视需要跑 Playwright。
+4. 全量回归：`npm install` → `npm run build -w zhixu-algo-viz` → `npm run typecheck` → `npm run test:algorithms` → `npm run test:demo-code` → `npm run build:demo` → `npm run build`（`next build`）→ 视需要跑 Playwright。
 
 ---
 
@@ -470,7 +470,7 @@ sequenceDiagram
 - 产物三件套：dist/index.mjs(ESM) + dist/index.cjs(CJS) + dist/index.d.ts(类型)，缺一不可。
 - 单入口原则：所有对外 API 一律经 packages/algo-viz/src/index.ts 导出，禁止消费者深路径 import src 内部文件。
 - 版本语义化：0.x 为演进期，破坏性改动 bump minor；发布是独立步骤，需用户授权 + npm login。
-- 主应用与 demo 只 import 包名 @zhixu/algo-viz，绝不 import ../packages/... 相对路径（保持单一消费方式）。
+- 主应用与 demo 只 import 包名 zhixu-algo-viz，绝不 import ../packages/... 相对路径（保持单一消费方式）。
 - 测试/校验脚本在跑之前必须先 build 包（已用 pre* 脚本保证）。
 ```
 
@@ -492,7 +492,7 @@ graph TD
 仅留口，不纳入本期任务：
 
 1. 用户确认要发布 + 授权 + 提供 npm 账号；
-2. `npm view @zhixu/algo-viz` / `npm view zhixu-algo-viz` 查名与 scope 归属；
+2. `npm view zhixu-algo-viz` / `npm view zhixu-algo-viz` 查名与 scope 归属；
 3. 在 `packages/algo-viz` 下 `npm login`；
 4. `npm version 0.1.0`（或首个目标版本）→ `npm run build` → `npm publish --access public`；
 5. 主应用后续把根依赖从 `"*"` 收紧为正式版本号。
@@ -500,8 +500,8 @@ graph TD
 ## 关键风险
 
 1. **npm 授权与 scope**：`@zhixu` scope 需用户拥有；无授权不能发布。→ 本期不 publish，规避。
-2. **包名冲突**：`zhixu-algo-viz`/`@zhixu/algo-viz` 可能被占。→ 发布前 `npm view` 核查，必要时换名。
+2. **包名冲突**：`zhixu-algo-viz`/`zhixu-algo-viz` 可能被占。→ 发布前 `npm view` 核查，必要时换名。
 3. **双重维护**：若只复制不删除 lib 会双份漂移。→ 方案强制"移入包 + 删 lib"，T05 收口。
 4. **类型与运行时漂移**：手写 `.d.ts` 易错。→ tsc 从同源入口自动产出，禁止手写。
-5. **workspace 解析/Next 兼容**：Next 15 消费预构建 dist 无需 `transpilePackages`，但需在 T03/T05 用 `next build` 实测；若 turbopack 对 `exports` 解析异常，回退 `transpilePackages: ['@zhixu/algo-viz']`。
+5. **workspace 解析/Next 兼容**：Next 15 消费预构建 dist 无需 `transpilePackages`，但需在 T03/T05 用 `next build` 实测；若 turbopack 对 `exports` 解析异常，回退 `transpilePackages: ['zhixu-algo-viz']`。
 6. **回归风险**：改 import 面广（组件/demo/测试/校验脚本）。→ T05 全量回归脚本兜底。

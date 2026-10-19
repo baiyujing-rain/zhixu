@@ -4,7 +4,7 @@ import { recordOrigin } from '@/lib/dates';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Check, Pause, Play, RotateCcw, SkipBack, SkipForward, StepBack, StepForward } from 'lucide-react';
 import { WindowScene, BFSScene, HashScene, IntervalScene } from './additional-scenes';
-import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, type Algorithm, type DemoInput, type Frame, type Trace } from '@zhixu/algo-viz';
+import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, type Algorithm, type DemoInput, type Frame, type Trace } from 'zhixu-algo-viz';
 
 function ArrayScene({ trace, frame }: { trace: Trace; frame: Frame }) {
   const viewport = useRef<HTMLDivElement>(null);

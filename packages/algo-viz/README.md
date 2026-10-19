@@ -1,17 +1,17 @@
-# @zhixu/algo-viz
+# zhixu-algo-viz
 
 智序 · 算法演示教学轨迹引擎。纯 TypeScript、零运行时依赖，产出确定、可序列化的教学演示轨迹快照（Trace）。
 
 ## 安装
 
 ```bash
-npm install @zhixu/algo-viz
+npm install zhixu-algo-viz
 ```
 
 ## 用法
 
 ```ts
-import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode } from '@zhixu/algo-viz';
+import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode } from 'zhixu-algo-viz';
 
 const trace = buildTrace('two-pointers', DEFAULT_INPUTS['two-pointers']);
 // trace.frames 逐步推进，每帧含 phase / title / detail / line 与可视化坐标

@@ -1,5 +1,5 @@
 {
-  "name": "@zhixu/algo-viz",
+  "name": "zhixu-algo-viz",
   "version": "0.1.0",
   "description": "智序 · 算法演示教学轨迹引擎（纯 TypeScript，零运行时依赖）",
   "license": "MIT",

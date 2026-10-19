@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from 'react';
-import type { Frame, Trace } from '@zhixu/algo-viz';
+import type { Frame, Trace } from 'zhixu-algo-viz';
 
 export function WindowScene({ trace, frame }: { trace: Trace; frame: Frame }) {
   const text = trace.text || '', entries = frame.seen || [], viewport = useRef<HTMLDivElement>(null);

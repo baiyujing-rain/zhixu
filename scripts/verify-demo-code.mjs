@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { coreCode, DEFAULT_INPUTS, parseGrid } from '@zhixu/algo-viz';
+import { coreCode, DEFAULT_INPUTS, parseGrid } from 'zhixu-algo-viz';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const directory = path.join(root, 'artifacts', 'demo-code-verification');
 await fs.mkdir(directory, { recursive: true });
