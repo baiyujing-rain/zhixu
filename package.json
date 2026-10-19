@@ -1,0 +1,32 @@
+{
+  "name": "zhixu",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "node scripts/copy-monaco.mjs",
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test:algorithms": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node --test tests/algorithm-traces.test.mjs tests/additional-traces.test.mjs",
+    "test:e2e": "playwright test",
+    "test:demo-code": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node scripts/verify-demo-code.mjs"
+  },
+  "dependencies": {
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "lucide-react": "^0.468.0",
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.52.2",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@playwright/test": "^1.55.0"
+  }
+}
