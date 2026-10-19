@@ -45,7 +45,15 @@ jobs:
       # constraint resolves correctly (the `-c` path is relative to the CWD).
       - run: pip install -r requirements.txt
         working-directory: backend
-      - run: pytest backend/tests -q
+      - name: Run pytest
+        run: |
+          pytest backend/tests -q -v --tb=long 2>&1 | tee pytest.log
+          echo "exit=$?" >> pytest.log
+        continue-on-error: true
+      - name: Publish pytest output
+        run: |
+          cat pytest.log >> "$GITHUB_STEP_SUMMARY"
+          if grep -q "^exit=1" pytest.log; then exit 1; fi
 
   # Full browser E2E needs a running frontend + backend and Playwright browsers,
   # so it is intentionally kept out of the push/PR path. Trigger it manually
