@@ -788,6 +788,77 @@ body[data-resizing] { user-select:none; }
 
 .review-practice-modal { max-width:620px; }
 
+/* Local, runnable verification of built-in example problems */
+.local-judge { margin:0 0 12px; border:1px solid var(--border); border-radius:9px; background:var(--surface); overflow:hidden; }
+.local-judge-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; padding:11px 14px; color:var(--text); font-size:12px; }
+.local-judge-toggle>span { display:flex; align-items:center; gap:7px; }
+.local-judge-toggle svg.is-open { transform:rotate(180deg); }
+.local-judge-badge { display:inline-flex; align-items:center; padding:1px 7px; border-radius:99px; background:var(--soft); color:var(--muted); font-size:10px; }
+.local-judge-badge.accepted { background:var(--mint); color:var(--accent); }
+.local-judge-badge.wrong_answer,.local-judge-badge.setup_error,.local-judge-badge.error { background:color-mix(in srgb,var(--cinnabar) 12%,var(--surface)); color:var(--cinnabar); }
+.local-judge-body { padding:14px; border-top:1px solid var(--border); background:var(--soft); }
+.local-judge-run { color:var(--accent); font-size:11px; padding:9px 13px; }
+.local-judge-hint { display:flex; align-items:flex-start; gap:7px; color:var(--muted); font-size:11px; line-height:1.8; }
+.local-judge-hint svg { margin-top:2px; color:var(--muted); }
+.local-judge-result { margin-top:12px; display:grid; gap:10px; }
+.local-judge-summary { display:grid; gap:7px; }
+.local-judge-summary strong { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; }
+.local-judge-accepted .local-judge-summary strong { color:var(--accent); }
+.local-judge-wrong_answer .local-judge-summary strong,.local-judge-setup_error .local-judge-summary strong,.local-judge-error .local-judge-summary strong { color:var(--cinnabar); }
+.local-judge-error-text { color:var(--cinnabar); font-size:11px; line-height:1.7; overflow-wrap:anywhere; }
+.local-judge-cases { list-style:none; margin:0; padding:0; display:grid; gap:9px; }
+.local-judge-cases>li { border:1px solid var(--border); border-radius:8px; background:var(--surface); padding:11px 12px; }
+.local-judge-case-head { display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--muted); margin-bottom:9px; }
+.local-judge-case-head span:last-child { display:inline-flex; align-items:center; gap:5px; }
+.local-judge-cases>li.passed .local-judge-case-head span:last-child { color:var(--accent); }
+.local-judge-cases>li.failed .local-judge-case-head span:last-child { color:var(--cinnabar); }
+.local-judge-cases dl { display:grid; gap:6px; margin:0; }
+.local-judge-cases dl>div { display:grid; grid-template-columns:36px 1fr; gap:8px; align-items:baseline; }
+.local-judge-cases dt { font-size:9px; color:var(--muted); }
+.local-judge-cases dd { margin:0; min-width:0; }
+.local-judge-cases dd code { font-family:Consolas,monospace; font-size:11px; overflow-wrap:anywhere; }
+.local-judge-stdout { display:grid; gap:5px; margin-top:9px; }
+.local-judge-stdout span { font-size:9px; color:var(--muted); }
+.local-judge-stdout pre { margin:0; padding:8px; max-height:90px; overflow:auto; background:var(--soft); border:1px solid var(--border); border-radius:6px; font-size:10px; white-space:pre-wrap; color:var(--text); }
+.local-judge-verification { margin:2px 0 0; font-size:9px; line-height:1.8; color:var(--muted); }
+
+/* Review memory curve and weakness radar */
+.weakness-card { padding:22px 24px; margin:0 0 18px; }
+.weakness-card-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:8px; }
+.weakness-card-heading h2 { font-size:14px; font-weight:600; }
+.weakness-card-heading span { font-size:10px; color:var(--muted); }
+.weakness-card-note { margin:6px 0 0; font-size:10px; color:var(--muted); line-height:1.8; }
+.weakness-radar svg { width:100%; height:auto; display:block; }
+.radar-grid { fill:none; stroke:var(--border); stroke-width:1; }
+.radar-data { fill:color-mix(in srgb,var(--accent) 16%,transparent); stroke:var(--accent); stroke-width:2; }
+.radar-dot { fill:var(--accent); }
+.radar-tag { fill:var(--text); font-size:11px; }
+.radar-pct { fill:var(--muted); font-size:10px; }
+.weakness-legend { display:flex; align-items:center; gap:7px; justify-content:center; color:var(--muted); font-size:10px; margin-top:4px; }
+.weakness-legend span { width:9px; height:9px; border-radius:50%; background:color-mix(in srgb,var(--accent) 45%,transparent); }
+.weakness-empty,.review-curve-empty { padding:18px 8px; color:var(--muted); font-size:11px; text-align:center; }
+.weakness-bars { display:grid; gap:13px; }
+.weakness-bar { display:grid; gap:7px; }
+.weakness-bar-head,.weakness-bar-meta { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+.weakness-bar-head strong { font-size:12px; font-weight:500; }
+.weakness-bar-head small,.weakness-bar-meta { color:var(--muted); font-size:10px; }
+.weakness-bar-track { display:block; height:9px; border-radius:5px; background:var(--soft); overflow:hidden; }
+.weakness-bar-track i { display:block; height:100%; border-radius:5px; background:var(--accent); }
+.memory-curve svg { width:100%; height:auto; display:block; }
+.memory-grid { stroke:var(--border); stroke-width:1; }
+.memory-line { fill:none; stroke:var(--accent); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.memory-dot { fill:var(--surface); stroke:var(--accent); stroke-width:2; }
+.memory-axis-label { fill:var(--muted); font-size:10px; }
+.memory-rating-label { fill:var(--text); font-size:11px; font-weight:600; }
+.memory-date-label { fill:var(--muted); font-size:9px; }
+.memory-interval-label { fill:var(--muted); font-size:9px; }
+.memory-curve-foot { display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:10px; margin-top:6px; }
+.memory-curve-empty { padding:16px 6px; color:var(--muted); font-size:11px; }
+.review-curve { margin-top:16px; border-top:1px solid var(--border); padding-top:12px; }
+.review-curve summary { cursor:pointer; color:var(--accent); font-size:12px; font-weight:500; }
+.review-curve summary::-webkit-details-marker { display:none; }
+.review-curve .review-loading { padding:14px 0 6px; }
+
 /* Personal notes, with a writable outline rather than generated claims. */
 .notes-editor-modal { max-width:700px; }
 .notes-editor-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:18px 0 13px; flex-wrap:wrap; }

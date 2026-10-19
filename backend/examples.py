@@ -1,6 +1,12 @@
 EXAMPLES = {
     'two-sum': {
         'title': '两数之和', 'difficulty': '简单', 'tags': ['数组', '哈希表'],
+        'method': 'twoSum',
+        'cases': [
+            {'input': {'nums': [2, 7, 11, 15], 'target': 9}, 'output': [0, 1]},
+            {'input': {'nums': [3, 2, 4], 'target': 6}, 'output': [1, 2]},
+            {'input': {'nums': [3, 3], 'target': 6}, 'output': [0, 1]},
+        ],
         'content': '给定一个整数数组 nums 和一个整数目标值 target，请找出和为 target 的两个整数，并返回它们的数组下标。\n\n你可以假设每种输入只会对应一个答案，不能重复使用同一个元素。\n\n示例：nums = [2, 7, 11, 15], target = 9\n输出：[0, 1]\n解释：nums[0] + nums[1] = 9。\n\n约束：2 <= nums.length <= 10^4；整数可能为负数。\n进阶：尝试设计时间复杂度小于 O(n²) 的算法。',
         'steps': [
             '### 先把问题说清楚\n我们要找的是两个数的**下标**，不是数本身。同一个位置不能用两次。\n\n看 `[2, 7, 11, 15]`，目标是 `9`：如果先选 `2`，还需要什么数？\n\n**先试着回答：还差多少，以及你会怎样找它？**',
@@ -15,6 +21,13 @@ EXAMPLES = {
     },
     'valid-parentheses': {
         'title': '有效的括号', 'difficulty': '简单', 'tags': ['字符串', '栈'],
+        'method': 'isValid',
+        'cases': [
+            {'input': {'s': '()[]{}'}, 'output': True},
+            {'input': {'s': '([)]'}, 'output': False},
+            {'input': {'s': '{[]}'}, 'output': True},
+            {'input': {'s': '('}, 'output': False},
+        ],
         'content': '给定一个只包含 ( ) { } [ ] 的字符串 s，判断字符串是否有效。\n\n有效字符串需要满足：左括号必须用相同类型的右括号闭合；左括号必须以正确顺序闭合；每个右括号都有对应的左括号。\n\n示例：s = "()[]{}"，输出 true。\n示例：s = "([)]"，输出 false。\n\n约束：1 <= s.length <= 10^4。',
         'steps': ['### 先观察配对顺序\n对 `([])`，最后出现的左括号 `[` 必须最先闭合。\n\n**如果只统计左右括号的数量，能区分 `([])` 和 `([)]` 吗？**', '### 找到需要记住的信息\n扫描字符串时，需要记住还没有闭合的左括号，而且最晚出现的要先处理。\n\n这正好对应**后进先出**。想一想，哪一种数据结构支持这个顺序？', '### 使用栈\n遇到左括号就入栈；遇到右括号，检查栈顶是否是对应的左括号。\n\n栈为空或者类型不匹配时，立即返回 false。全部扫描结束后，栈也必须为空。\n\n试着手动追踪 `([)]` 的栈变化。', '### 写成伪代码\n```text\n创建空栈\n遍历字符\n    左括号：入栈\n    右括号：检查栈顶配对，失败则返回 false；成功则弹出\n返回栈是否为空\n```\n\nC++ 用 `stack<char>`；Python 用列表的 `append` / `pop`。'],
         'cpp': '#include <string>\n#include <stack>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == \'(\' || c == \'[\' || c == \'{\') st.push(c);\n            else {\n                if (st.empty()) return false;\n                char expected = c == \')\' ? \'(\' : c == \']\' ? \'[\' : \'{\';\n                if (st.top() != expected) return false;\n                st.pop();\n            }\n        }\n        return st.empty();\n    }\n};',
@@ -24,6 +37,12 @@ EXAMPLES = {
     },
     'binary-search': {
         'title': '二分查找', 'difficulty': '简单', 'tags': ['数组', '二分查找'],
+        'method': 'search',
+        'cases': [
+            {'input': {'nums': [-1, 0, 3, 5, 9, 12], 'target': 9}, 'output': 4},
+            {'input': {'nums': [-1, 0, 3, 5, 9, 12], 'target': 2}, 'output': -1},
+            {'input': {'nums': [5], 'target': 5}, 'output': 0},
+        ],
         'content': '给定升序排列的整数数组 nums 和目标值 target，如果目标存在，返回下标，否则返回 -1。要求时间复杂度 O(log n)。\n\n示例：nums = [-1,0,3,5,9,12], target = 9\n输出：4\n\n约束：1 <= nums.length <= 10^4；所有元素互不相同。',
         'steps': ['### 利用题目给出的条件\n数组已经有序。假如中间的数比目标小，目标还可能在它的左侧吗？\n\n**先解释为什么可以排除一半区间。**', '### 保留可能有答案的范围\n用 `left` 和 `right` 表示一个闭区间。检查中间位置 `mid`：\n- 值太小，去右半边。\n- 值太大，去左半边。\n- 相等，返回下标。', '### 边界是这道题的重点\n闭区间用 `left <= right` 作为循环条件。\n\n排除已经检查的 mid：`left = mid + 1` 或 `right = mid - 1`。\n\n如果忘记加减 1，只有一个元素时会发生什么？', '### 伪代码\n```text\nleft = 0, right = n - 1\n当 left <= right\n    mid = left + (right - left) / 2 的整数部分\n    相等则返回 mid\n    太小则 left = mid + 1\n    太大则 right = mid - 1\n返回 -1\n```\n\n先用单元素数组手动检查边界。'],
         'cpp': '#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int left = 0, right = (int)nums.size() - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n        return -1;\n    }\n};',

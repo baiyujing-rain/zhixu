@@ -20,6 +20,8 @@ from backend.chatgpt_auth import auth, router as auth_router
 from backend.credential_store import CredentialStorageError
 from backend.optimization import OptimizeInput, OptimizationPayload, optimization_prompt, report_model, serialize_report
 from backend import leetcode as platform
+from backend.judge import judge_router
+from backend.review_stats import review_stats_router
 
 ROOT = Path(__file__).parent
 def config_path():
@@ -541,6 +543,8 @@ async def coach(id: int, body: CoachInput, session: Session = Depends(db)):
 
 app.include_router(review_router(db, LearningSession, ReviewPlan, ReviewEvent, get_session, write_session))
 app.include_router(library_router(db, LearningSession, LibraryProblem, LibraryLink, JudgeJob, get_session, write_session, serialize))
+app.include_router(judge_router(db, LearningSession, get_session))
+app.include_router(review_stats_router(db, LearningSession, ReviewEvent, get_session))
 
 from backend.archive import archive_router
 app.include_router(archive_router(db, LearningSession, OptimizationReport, Preference, preferences, ReviewPlan, ReviewEvent))

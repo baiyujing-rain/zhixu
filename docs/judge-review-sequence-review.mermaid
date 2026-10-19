@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant U as 用户
+    participant RB as ReviewBoard(前端)
+    participant API as FastAPI review_stats 路由
+    participant DB as SQLAlchemy(SQLite)
+
+    U->>RB: 打开「我的复盘」页
+    RB->>API: GET /api/reviews (既有)
+    RB->>API: GET /api/reviews/weaknesses (新增，并行)
+    API->>DB: join ReviewEvent + LearningSession
+    API->>DB: 按 session.tags 分组聚合 again_rate / avg_step
+    API-->>RB: Weaknesses{axes:[{tag, again_rate, event_count, ...}]}
+    RB-->>U: WeaknessRadar 渲染雷达图（<3 轴降级为条形列表）
+
+    U->>RB: 在回想练习弹窗展开「记忆曲线」
+    RB->>API: GET /api/sessions/{id}/review-curve
+    API->>DB: get_session(id) 校验
+    API->>DB: 取该题 ReviewEvent 按 reviewed_at 升序
+    API-->>RB: ReviewCurve{points:[{rating_ordinal, step, interval_minutes, ...}]}
+    RB-->>U: MemoryCurve 渲染折线 + 间隔标注

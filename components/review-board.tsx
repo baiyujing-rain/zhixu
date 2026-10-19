@@ -9,12 +9,16 @@ import { localDateTime, recordOrigin } from '@/lib/dates';
 import Modal from './modal';
 import { useLocalInput } from './use-local-input';
 import ForeignDrafts from './foreign-drafts';
+import MemoryCurve, { type CurvePoint } from './review-curve';
+import WeaknessRadar, { type WeaknessAxis } from './weakness-radar';
 
 type Item = { id: number; created_at: string; title: string; language: string; status: string };
 type Plan = { session_id: number; created_at: string; title: string; language: string; status: string; step: number; version: number; due_at: string; due: boolean; last_reviewed_at: string | null; next_good_days: number; next_easy_days: number; review_count: number };
 type Overview = { entries: Plan[]; stats: { scheduled: number; due: number; reviewed_today: number } };
 type Detail = { content: string; notes: string };
 type Event = { id: number; rating: string; note: string; reviewed_at: string; next_due_at: string };
+type Curve = { session_id: number; title: string; tags: string[]; current_step: number; day_steps: number[]; points: CurvePoint[] };
+type WeaknessData = { total_events: number; axes: WeaknessAxis[]; note: string };
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 const ratingNames: Record<Rating, string> = { again: '忘了', hard: '还不熟', good: '基本想起', easy: '很熟悉' };
 const noteKey = (plan: Plan) => `zhixu-review-note-${plan.session_id}:${recordOrigin(plan.created_at)}`;
@@ -26,6 +30,8 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [filter, setFilter] = useState<'due' | 'all' | 'upcoming'>('due'), [search, setSearch] = useState('');
   const [active, setActive] = useState<Plan | null>(null), [detail, setDetail] = useState<Detail | null>(null), [history, setHistory] = useState<Event[]>([]);
   const [practiceLoading, setPracticeLoading] = useState(false), [practiceError, setPracticeError] = useState(''), [showNotes, setShowNotes] = useState(false);
+  const [weaknesses, setWeaknesses] = useState<WeaknessData | null>(null);
+  const [curve, setCurve] = useState<Curve | null>(null), [curveLoading, setCurveLoading] = useState(false), [curveError, setCurveError] = useState('');
   const observation = useLocalInput(active ? noteKey(active) : null, 3000);
   const note = observation.value;
   const [pausing, setPausing] = useState<Plan | null>(null), [showAllAvailable, setShowAllAvailable] = useState(false);
@@ -39,8 +45,11 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
     const timeout = window.setTimeout(() => controller.abort(), 12000);
     const epoch = ++requestEpoch.current; setFetching(true);
     try {
-      const result = await api<Overview>('/reviews', 'GET', undefined, controller.signal);
-      if (alive.current && requestEpoch.current === epoch) { setData(result); setHasData(true); setReadError(''); }
+      const [overview, weaknessData] = await Promise.all([
+        api<Overview>('/reviews', 'GET', undefined, controller.signal),
+        api<WeaknessData>('/reviews/weaknesses', 'GET', undefined, controller.signal).catch(() => null),
+      ]);
+      if (alive.current && requestEpoch.current === epoch) { setData(overview); setWeaknesses(weaknessData); setHasData(true); setReadError(''); }
     } catch (e) { if (alive.current && requestEpoch.current === epoch) setReadError((e as Error).name === 'AbortError' ? '读取复习安排超时，请重试。' : (e as Error).message); }
     finally {
       window.clearTimeout(timeout);
@@ -70,7 +79,7 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
   }
   async function practice(plan: Plan) {
     const epoch = ++practiceEpoch.current;
-    setActive(plan); setDetail(null); setHistory([]); setPracticeError(''); setShowNotes(false); setPracticeLoading(true);
+    setActive(plan); setDetail(null); setHistory([]); setPracticeError(''); setShowNotes(false); setCurve(null); setCurveError(''); setPracticeLoading(true);
     try {
       const [record, events] = await Promise.all([api<Detail>(`/sessions/${plan.session_id}`, 'GET', undefined, undefined, plan.created_at), api<Event[]>(`/sessions/${plan.session_id}/reviews`, 'GET', undefined, undefined, plan.created_at)]);
       if (alive.current && practiceEpoch.current === epoch) { setDetail(record); setHistory(events); }
@@ -78,6 +87,15 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
     finally { if (alive.current && practiceEpoch.current === epoch) setPracticeLoading(false); }
   }
   function closePractice() { if (pendingRef.current) return; practiceEpoch.current++; setActive(null); }
+  async function loadCurve() {
+    if (!active || curve || curveLoading) return;
+    setCurveLoading(true); setCurveError('');
+    try {
+      const value = await api<Curve>(`/sessions/${active.session_id}/review-curve`, 'GET', undefined, undefined, active.created_at);
+      if (alive.current) setCurve(value);
+    } catch (e) { if (alive.current) setCurveError((e as Error).message); }
+    finally { if (alive.current) setCurveLoading(false); }
+  }
   function editNote(value: string) { observation.set(value); }
   async function rate(rating: Rating) {
     if (!active || pendingRef.current || practiceLoading || !detail || observation.tooLong || readError || fetching) return;
@@ -105,6 +123,7 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
   return <div className="page review-page">
     <div className="page-heading"><div><div className="heading-kicker"><span />让理解经得起下一次回想</div><h1>想通之后，再想一遍。</h1><p>先回想，再看笔记。按真实的熟悉程度，为下一次练习留个时间。</p></div><button className="secondary-button" disabled={Boolean(pending) || fetching} onClick={() => void load()}><RefreshCw size={15} className={fetching ? 'spin' : ''} />刷新安排</button></div>
     <div className="review-stats"><section><Clock3 size={19} /><div><strong>{hasData ? data.stats.due : '—'}</strong><span>现在可复习</span></div></section><section><CalendarDays size={19} /><div><strong>{hasData ? data.stats.scheduled : '—'}</strong><span>已安排题目</span></div></section><section><CheckCheck size={19} /><div><strong>{hasData ? data.stats.reviewed_today : '—'}</strong><span>今日复习过 · 北京时间</span></div></section></div>
+    {hasData && !readError && weaknesses && weaknesses.axes.length > 0 && <section className="card weakness-card"><div className="weakness-card-heading"><h2>薄弱点雷达</h2><span>按标签统计「忘了」的占比</span></div><WeaknessRadar axes={weaknesses.axes} /><p className="weakness-card-note">{weaknesses.note}</p></section>}
     <div className="review-method"><Lightbulb size={18} /><p>这是明确的间隔规则：想起后依次间隔 1 / 3 / 7 / 14 / 30 天，很熟悉可以跳一级；还不熟明天再练，忘了则 10 分钟后重试。自评不代表代码已经通过，也不会自动标记掌握。</p></div>
     {readError && <div className="auth-error review-read-error" role="alert">{readError}<p>{hasData ? '以下是上次读到的安排，可能已变化。请刷新成功后再记录自评。' : '尚未读取复习安排，无法确认数量。已有记录没有改变。'}</p></div>}{error && <div className="auth-error" role="alert">{error}</div>}{notice && <div className="review-notice" role="status"><CheckCheck size={16} />{notice}</div>}
     <div className="records-toolbar"><div className="filter-tabs">{([['due', '待复习'], ['upcoming', '接下来'], ['all', '全部安排']] as const).map(([value, label]) => <button key={value} className={filter === value ? 'selected' : ''} disabled={!hasData} onClick={() => setFilter(value)}>{label}</button>)}</div><div className="search-input"><Search size={16} /><input aria-label="搜索复习题目" placeholder="搜索题目或语言" value={search} onChange={event => setSearch(event.target.value)} /></div></div>
@@ -115,7 +134,7 @@ export default function ReviewBoard({ items, onOpen, onNew, onChanged }: { items
       {practiceLoading ? <div className="review-loading"><Loader2 size={19} className="spin" />正在打开题目…</div> : detail && <>
         <div className="review-question markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{detail.content}</ReactMarkdown></div>
         <div className="review-recall-actions"><button className="text-button" disabled={Boolean(pending)} onClick={() => setShowNotes(!showNotes)}><BookOpen size={14} />{showNotes ? '收起以往笔记' : '回想后，展开以往笔记'}</button><button className="text-button" disabled={Boolean(pending)} onClick={() => { closePractice(); onOpen(active.session_id); }}>回工作台重写<ChevronRight size={14} /></button></div>
-        {showNotes && <div className="review-old-notes"><h3>我的复盘笔记</h3>{detail.notes ? <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{detail.notes}</ReactMarkdown></div> : <p>这道题还没有复盘笔记。</p>}{history.length > 0 && <><h3>最近的复习记录</h3>{history.slice(0, 5).map(event => <div className="review-event" key={event.id}><span>{localDateTime(event.reviewed_at)} · {ratingNames[event.rating as Rating]}</span>{event.note && <p>{event.note}</p>}</div>)}</>}</div>}
+        {showNotes && <div className="review-old-notes"><h3>我的复盘笔记</h3>{detail.notes ? <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{detail.notes}</ReactMarkdown></div> : <p>这道题还没有复盘笔记。</p>}{history.length > 0 && <><h3>最近的复习记录</h3>{history.slice(0, 5).map(event => <div className="review-event" key={event.id}><span>{localDateTime(event.reviewed_at)} · {ratingNames[event.rating as Rating]}</span>{event.note && <p>{event.note}</p>}</div>)}</>}<details className="review-curve" onToggle={event => { if (event.currentTarget.open) void loadCurve(); }}><summary>记忆曲线</summary>{curveLoading && <div className="review-loading"><Loader2 size={16} className="spin" />正在读取记忆曲线…</div>}{curveError && <div className="auth-error" role="alert">{curveError}</div>}{curve && (curve.points.length > 0 ? <MemoryCurve points={curve.points} daySteps={curve.day_steps} /> : <p className="review-curve-empty">还没有复习记录，先完成一次回想自评。</p>)}</details></div>}
         <label className="review-note-label">这次卡点或关键观察（可选）<textarea aria-label="本次复习观察" value={note} maxLength={3000} disabled={Boolean(pending)} onChange={event => editNote(event.target.value)} placeholder="比如：不要重复使用当前位置；递归栈也要算空间。" /></label>
         {!observation.cacheAvailable && note && <p className="local-input-warning">浏览器无法暂存本次观察，请先记录自评或复制内容再离开。</p>}<ForeignDrafts entries={observation.foreign} label="观察" disabled={Boolean(pending) || Boolean(note.trim())} onRestore={observation.restore} /><div className="review-rating-label">这次回想得怎么样？</div><div className="review-ratings">{([['again', '10 分钟后'], ['hard', '明天'], ['good', `${active.next_good_days} 天后`], ['easy', `${active.next_easy_days} 天后`]] as const).map(([rating, when]) => <button key={rating} className={`review-rating ${rating}`} disabled={Boolean(pending) || Boolean(readError) || fetching || observation.tooLong} onClick={() => void rate(rating)}><strong>{pending === `rate:${rating}` ? <Loader2 size={15} className="spin" /> : ratingNames[rating]}</strong><small>{when}</small></button>)}</div>
       </>}{readError && <div className="auth-error" role="alert">安排读取失败，请关闭练习并刷新后继续。<button className="text-button" disabled={Boolean(pending)} onClick={() => { closePractice(); void load(); }}>关闭并重连</button></div>}{practiceError && <div className="auth-error" role="alert">{practiceError}<button className="text-button" disabled={Boolean(pending)} onClick={() => { closePractice(); void load(); }}>关闭并刷新安排</button></div>}

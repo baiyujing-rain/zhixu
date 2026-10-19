@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant U as 用户
+    participant LJ as LocalJudge(前端)
+    participant API as FastAPI judge 路由
+    participant DB as SQLAlchemy(SQLite)
+    participant RUN as judge.run_case(父进程)
+    participant H as judge_harness(子进程)
+
+    U->>LJ: 点击「运行样例」
+    LJ->>API: onSave() 保存当前草稿
+    LJ->>API: POST /api/sessions/{id}/judge<br/>{language, expected_code}
+    API->>DB: get_session(id) 校验存在与 origin
+    API->>API: 校验 language / expected_code 与服务器草稿一致
+    API->>API: 取 EXAMPLES[example_id].method 与 cases
+    loop 每个用例 case
+        API->>RUN: run_case(code, method, case, timeout=4s)
+        RUN->>H: subprocess.run([python, -I, judge_harness.py])<br/>stdin=JSON{code, method, case}, cwd=临时目录
+        H->>H: 导入白名单 + 替换危险内建 + exec 用户代码
+        H->>H: getattr(Solution(), method)(**case.input)
+        H->>RUN: stdout 返回 JSON{passed, actual, stdout, error}
+        RUN-->>API: 单用例结果（含 timeout/超限标记）
+    end
+    API->>API: 聚合 verdict / passed / total + verification 文案
+    API-->>LJ: 200 JudgeResult
+    LJ-->>U: 渲染每个用例通过/失败、输入/期望/实际、stdout、错误

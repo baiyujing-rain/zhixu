@@ -1,0 +1,83 @@
+classDiagram
+    class JudgeInput {
+        +language: Literal["python"]
+        +expected_code: str
+    }
+
+    class JudgeCaseResult {
+        +index: int
+        +input: dict
+        +expected: Any
+        +actual: Any
+        +passed: bool
+        +stdout: str
+        +error: str | None
+    }
+
+    class JudgeResult {
+        +status: str
+        +verdict: str
+        +passed: int
+        +total: int
+        +cases: list[JudgeCaseResult]
+        +verification: str
+    }
+
+    class judge_router {
+        +judge(id, body, session) JudgeResult
+    }
+
+    class run_case {
+        +run_case(code, method, case, timeout) dict
+    }
+
+    class judge_harness {
+        +ALLOWED_MODULES: set
+        +safe_import(name) module
+        +main() None
+    }
+
+    class ReviewCurvePoint {
+        +reviewed_at: datetime
+        +rating: str
+        +rating_ordinal: int
+        +step: int
+        +interval_minutes: int
+    }
+
+    class ReviewCurve {
+        +session_id: int
+        +title: str
+        +tags: list[str]
+        +current_step: int
+        +day_steps: list[int]
+        +points: list[ReviewCurvePoint]
+    }
+
+    class WeaknessAxis {
+        +tag: str
+        +event_count: int
+        +session_count: int
+        +again_count: int
+        +again_rate: float
+        +avg_step: float
+    }
+
+    class Weaknesses {
+        +total_events: int
+        +axes: list[WeaknessAxis]
+        +note: str
+    }
+
+    class review_stats_router {
+        +memory_curve(id, session) ReviewCurve
+        +weaknesses(session) Weaknesses
+    }
+
+    judge_router --> run_case : 调用
+    run_case --> judge_harness : subprocess 执行
+    JudgeResult --> JudgeCaseResult : 组合
+    ReviewCurve --> ReviewCurvePoint : 组合
+    Weaknesses --> WeaknessAxis : 组合
+    review_stats_router --> LearningSession : 读取 tags
+    review_stats_router --> ReviewEvent : 聚合 rating/step
