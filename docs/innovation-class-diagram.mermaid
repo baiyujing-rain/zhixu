@@ -1,0 +1,96 @@
+classDiagram
+    direction LR
+
+    class api {
+        <<function>>
+        +api(path, method, body, signal, expectedCreatedAt) T
+    }
+    class ApiError {
+        +string name
+        +number status
+    }
+
+    class apiCache {
+        <<module>>
+        +cacheGet(key) Promise~CachedEntry|null~
+        +cachePut(key, data) Promise~void~
+        +cacheInvalidate(prefix) Promise~void~
+        +isCacheable(path, method) boolean
+        +invalidationPrefixes(path, method) string[]
+        +subscribeApiSource(cb) unsubscribe
+        +readSource() 'network'|'cache'|'none'
+    }
+    class CachedEntry {
+        +string key
+        +unknown data
+        +number cachedAt
+    }
+
+    class demoShare {
+        <<module>>
+        +serializeDemoHash(share) string
+        +parseDemoHash(hash) DemoShare|null
+    }
+    class DemoShare {
+        +Algorithm algorithm
+        +Partial~DemoInput~ input
+        +number index
+    }
+    class DemoInput {
+        +string values
+        +string target
+        +string brackets
+        +string stairs
+        +string window
+        +string grid
+        +string intervals
+    }
+    class Algorithm {
+        <<type union of 10 ids>>
+    }
+
+    class problemGraph {
+        <<module>>
+        +exampleToAlgorithm(exampleId) Algorithm|null
+        +guessAlgorithm(item) Algorithm|null
+        +buildRelated(current, items) RelatedGroup[]
+    }
+    class RelatedGroup {
+        +string kind
+        +string title
+        +RelatedItem[] items
+    }
+    class RelatedItem {
+        +string id
+        +string title
+        +string subtitle
+        +string kind
+        +Algorithm algorithm
+        +number sessionId
+        +string hint
+    }
+
+    class RelatedProblems {
+        +render()
+    }
+    class Workspace {
+        +openSession(id)
+        +navigate(view)
+        +openLab(algorithm)
+    }
+    class AlgorithmDemo {
+        +share()
+    }
+
+    api ..> apiCache : calls
+    api ..> ApiError : throws
+    apiCache ..> CachedEntry : stores
+    demoShare ..> DemoShare : returns
+    DemoShare *-- Algorithm
+    DemoShare *-- DemoInput
+    problemGraph ..> RelatedGroup : returns
+    RelatedGroup *-- RelatedItem
+    RelatedItem ..> Algorithm : references
+    RelatedProblems ..> problemGraph : calls
+    Workspace --> RelatedProblems : renders
+    AlgorithmDemo ..> demoShare : calls

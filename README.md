@@ -31,6 +31,15 @@ animations along the way.
 
 - **Static demo page** — the same algorithm logic, shipped as a standalone
   zero-dependency page (see Demo below).
+- **Offline-first read cache** — recently read sessions, library, examples, and
+  profile snapshots are cached in IndexedDB and served when the backend is
+  unreachable, with a visible offline hint.
+- **Shareable demo links & embed cards** — encode algorithm, inputs, and playback
+  position into a URL hash, copy an iframe snippet, and open straight into the
+  viewer; malformed links fall back gracefully.
+- **Problem knowledge graph** — related same-category algorithms, matched
+  practice prompts, and earlier records sharing the same tags are derived on the
+  client and shown under each problem.
 - **Solution optimization & complexity analysis**, review scheduling (spaced
   repetition), auto-save, JSON backup/restore, and SQLite persistence.
 - **Bring your own model** — ChatGPT sign-in, DeepSeek (web transfer or API),

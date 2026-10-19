@@ -2,9 +2,9 @@
 
 import { recordOrigin } from '@/lib/dates';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Check, Pause, Play, RotateCcw, SkipBack, SkipForward, StepBack, StepForward } from 'lucide-react';
+import { ArrowRight, Check, Pause, Play, RotateCcw, Share2, SkipBack, SkipForward, StepBack, StepForward } from 'lucide-react';
 import { WindowScene, BFSScene, HashScene, IntervalScene } from './additional-scenes';
-import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, type Algorithm, type DemoInput, type Frame, type Trace } from 'zhixu-algo-viz';
+import { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode, serializeDemoHash, type Algorithm, type DemoInput, type Frame, type Trace } from 'zhixu-algo-viz';
 
 function ArrayScene({ trace, frame }: { trace: Trace; frame: Frame }) {
   const viewport = useRef<HTMLDivElement>(null);
@@ -128,6 +128,7 @@ export default function AlgorithmDemo({ sessionId, exampleId, language, createdA
   const [error, setError] = useState(''), [ready, setReady] = useState(false);
   const [codeOpen, setCodeOpen] = useState(standalone);
   const [inputOpen, setInputOpen] = useState(false);
+  const [shareMsg, setShareMsg] = useState('');
   const trace = useMemo(() => buildTrace(algorithm, applied), [algorithm, applied]);
   const frame = trace.frames[Math.min(index, trace.frames.length - 1)], last = trace.frames.length - 1;
   const dirty = JSON.stringify(draft) !== JSON.stringify(applied);
@@ -188,6 +189,27 @@ export default function AlgorithmDemo({ sessionId, exampleId, language, createdA
     try { buildTrace(algorithm, draft); setApplied({ ...draft }); setIndex(0); setError(''); setInputOpen(false); }
     catch (e) { setError((e as Error).message); }
   }
+  function copyText(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text; textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed'; textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select(); textarea.setSelectionRange(0, text.length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (ok) resolve(); else reject(new Error('copy failed'));
+      } catch (e) { reject(e); }
+    });
+  }
+  function share() {
+    const hash = serializeDemoHash({ algorithm, input: applied, index });
+    if (!hash) { setShareMsg('当前演示暂无法生成分享链接'); return; }
+    const url = `${location.origin}/demo/index.html#${hash}`;
+    copyText(url).then(() => setShareMsg('演示链接已复制'), () => setShareMsg('复制失败，请手动复制链接'));
+  }
   const result = frame.result === undefined ? null : frame.result === null ? '没有数对' : Array.isArray(frame.result) ? `[${frame.result.join(', ')}]` : String(frame.result);
   return <div className={`algorithm-demo ${standalone ? 'standalone-demo' : ''}`} data-motion={motion}>
     <div className="algo-scroll" ref={scroll}>
@@ -219,7 +241,7 @@ export default function AlgorithmDemo({ sessionId, exampleId, language, createdA
       <div className="algo-progress"><span>步骤 {index + 1} / {last + 1}</span><span>{playing ? '播放中' : index === last ? '已结束' : '已暂停'}</span></div>
       <input className="algo-timeline" type="range" aria-label="演示时间轴" min={0} max={last} value={index} onChange={e => seek(Number(e.target.value))} disabled={dirty} />
       <div className="algo-buttons"><button className="icon-button" aria-label="演示回到开头" onClick={() => seek(0)} disabled={index === 0 || dirty}><SkipBack size={17} /></button><button className="icon-button" aria-label="演示上一步" onClick={() => seek(index - 1)} disabled={index === 0 || dirty}><StepBack size={19} /></button><button className="primary-button algo-play" disabled={dirty || !ready} onClick={() => { if (playing) stop(); else { if (index === last) setIndex(0); setPlaying(true); } }}>{playing ? <Pause size={16} /> : index === last ? <RotateCcw size={16} /> : <Play size={16} />}{playing ? '暂停' : index === last ? '重播' : '播放'}</button><button className="icon-button" aria-label="演示下一步" onClick={() => seek(index + 1)} disabled={index === last || dirty}><StepForward size={19} /></button><button className="icon-button" aria-label="演示跳到结尾" onClick={() => seek(last)} disabled={index === last || dirty}><SkipForward size={17} /></button></div>
-      <div className="algo-options"><label>速度<select aria-label="演示播放速度" value={speed} onChange={e => setSpeed(Number(e.target.value))}><option value={.5}>0.5× 慢速</option><option value={1}>1×</option><option value={2}>2×</option></select></label><label><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} />平滑动画</label></div>
+      <div className="algo-options"><label>速度<select aria-label="演示播放速度" value={speed} onChange={e => setSpeed(Number(e.target.value))}><option value={.5}>0.5× 慢速</option><option value={1}>1×</option><option value={2}>2×</option></select></label><label><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} />平滑动画</label><button type="button" className="algo-share" onClick={share} aria-label="分享当前演示"><Share2 size={15} />分享</button>{shareMsg && <span className="algo-share-msg" role="status">{shareMsg}</span>}</div>
     </div>
   </div>;
 }

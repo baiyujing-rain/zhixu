@@ -21,6 +21,8 @@
   var CATALOG = Z.ALGORITHM_CATALOG;
   var buildTrace = Z.buildTrace;
   var coreCode = Z.coreCode;
+  var serializeDemoHash = Z.serializeDemoHash || function () { return ''; };
+  var parseDemoHash = Z.parseDemoHash || function () { return null; };
 
   var state = {
     algorithm: 'hash-two-sum',
@@ -59,6 +61,79 @@
   function on(id, event, handler) {
     var el = document.getElementById(id);
     if (el) el.addEventListener(event, handler);
+  }
+
+  /* ---------------- 分享 / 嵌入 ---------------- */
+
+  function shareHash() {
+    return serializeDemoHash({ algorithm: state.algorithm, input: state.applied, index: state.index });
+  }
+
+  function isEmbedded() {
+    if (window.self !== window.top) return true;
+    return /(^|&)embed=1(&|$)/.test(window.location.hash.replace(/^#/, ''));
+  }
+
+  function standaloneUrl() {
+    var hash = shareHash();
+    return window.location.pathname + window.location.search + (hash ? '#' + hash : '');
+  }
+
+  function showToast(message) {
+    var el = document.getElementById('demoToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'demoToast';
+      el.className = 'demo-toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.add('is-visible');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(function () { el.classList.remove('is-visible'); }, 2200);
+  }
+
+  function copyText(text, label) {
+    function fallback() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(ok ? label : '复制失败，请手动复制');
+      } catch (e) { showToast('复制失败，请手动复制'); }
+    }
+    function done() { showToast(label); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
+  }
+
+  function shareDemo() {
+    var hash = shareHash();
+    if (!hash) { showToast('当前演示无法生成分享链接'); return; }
+    copyText(window.location.origin + window.location.pathname + '#' + hash, '分享链接已复制');
+  }
+
+  function shareEmbed() {
+    var hash = shareHash();
+    if (!hash) { showToast('当前演示无法生成嵌入代码'); return; }
+    var src = window.location.origin + window.location.pathname + '#' + hash + '&embed=1';
+    copyText('<iframe src="' + src + '" width="720" height="520" style="border:0;border-radius:8px" loading="lazy" allowfullscreen></iframe>', '嵌入代码已复制');
+  }
+
+  function syncHash() {
+    if (!window.history || !window.history.replaceState) return;
+    var hash = shareHash();
+    var embedFlag = /(^|&)embed=1(&|$)/.test(window.location.hash.replace(/^#/, ''));
+    if (embedFlag) hash = hash ? hash + '&embed=1' : 'embed=1';
+    window.history.replaceState({}, '', hash ? '#' + hash : window.location.pathname + window.location.search);
   }
 
   /* ---------------- 目录（gallery） ---------------- */
@@ -117,6 +192,7 @@
     viewerEl.hidden = false;
     renderViewer();
     window.scrollTo(0, 0);
+    syncHash();
   }
 
   function backToGallery() {
@@ -143,6 +219,7 @@
       state.index = 0;
       build();
       renderViewer();
+      syncHash();
     } catch (error) {
       state.error = (error && error.message) ? error.message : String(error);
       var errEl = document.getElementById('inputError');
@@ -173,7 +250,7 @@
   }
 
   function togglePlay() {
-    if (state.playing) { pause(); updateFrame(); }
+    if (state.playing) { pause(); updateFrame(); syncHash(); }
     else play();
   }
 
@@ -189,6 +266,7 @@
     pause();
     state.index = Math.max(0, Math.min(last(), next));
     updateFrame();
+    syncHash();
   }
 
   function setSpeed(value) {
@@ -731,6 +809,8 @@
           '<option value="cpp"' + (state.language === 'cpp' ? ' selected' : '') + '>C++</option>' +
           '<option value="python"' + (state.language === 'python' ? ' selected' : '') + '>Python</option>' +
         '</select></label>' +
+        '<button id="shareLinkBtn" class="btn share-btn" type="button">复制链接</button>' +
+        '<button id="shareEmbedBtn" class="btn share-btn" type="button">嵌入代码</button>' +
       '</header>' +
 
       '<section class="meta">' +
@@ -772,9 +852,12 @@
           '<option value="2"' + (state.speed === 2 ? ' selected' : '') + '>2×</option>' +
         '</select></label></div>' +
       '</footer>' +
+      (isEmbedded() ? '<a class="embed-open-app" href="' + esc(standaloneUrl()) + '" target="_blank" rel="noreferrer">在知序打开 ↗</a>' : '') +
       '</div>';
 
     on('backBtn', 'click', backToGallery);
+    on('shareLinkBtn', 'click', shareDemo);
+    on('shareEmbedBtn', 'click', shareEmbed);
     on('algoSelect', 'change', function (event) { openAlgorithm(event.target.value); });
     on('langSelect', 'change', function (event) { setLanguage(event.target.value); });
     on('inputForm', 'submit', function (event) { event.preventDefault(); applyDraft(); });
@@ -858,4 +941,22 @@
   }
 
   renderGallery();
+
+  if (isEmbedded()) document.body.classList.add('is-embed');
+
+  function openFromHash() {
+    var initial = parseDemoHash(window.location.hash.slice(1));
+    if (!initial) return;
+    state.algorithm = initial.algorithm;
+    state.applied = cloneInput(initial.input);
+    state.draft = cloneInput(initial.input);
+    state.index = initial.index;
+    state.error = '';
+    build();
+    galleryEl.hidden = true;
+    viewerEl.hidden = false;
+    renderViewer();
+    window.scrollTo(0, 0);
+  }
+  try { openFromHash(); } catch (e) { /* Invalid share falls back to the gallery. */ }
 })();

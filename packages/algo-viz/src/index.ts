@@ -14,3 +14,6 @@ export type { Grid, Interval } from './additional-traces';
 
 export { ALGORITHM_CATALOG, algorithmName } from './algorithm-catalog';
 export type { PracticePrompt, AlgorithmEntry } from './algorithm-catalog';
+
+export { serializeDemoHash, parseDemoHash } from './demo-share';
+export type { DemoShare } from './demo-share';

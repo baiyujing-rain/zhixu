@@ -18,6 +18,10 @@
     "test:e2e": "playwright test",
     "pretest:demo-code": "npm run build -w zhixu-algo-viz",
     "test:demo-code": "node scripts/verify-demo-code.mjs",
+    "pretest:demo-share": "npm run build -w zhixu-algo-viz",
+    "test:demo-share": "node --test tests/demo-share.test.mjs",
+    "pretest:problem-graph": "npm run build -w zhixu-algo-viz",
+    "test:problem-graph": "node --test tests/problem-graph.test.mjs",
     "prebuild:demo": "npm run build -w zhixu-algo-viz",
     "build:demo": "node scripts/build-demo.mjs"
   },

@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant UI as Workspace/ProblemLibrary
+    participant A as lib/api.ts
+    participant C as lib/api-cache.ts
+    participant IDB as IndexedDB(zhixu-read-cache)
+    participant BE as FastAPI
+
+    UI->>A: api('/sessions', 'GET')
+    A->>BE: fetch /api/sessions
+    alt 网络正常
+        BE-->>A: 200 JSON
+        A->>C: cachePut('GET:/api/sessions', data) (fire-and-forget)
+        C->>IDB: put {key,data,cachedAt}
+        A-->>UI: data (source=network)
+    else 断网 / 后端未启动
+        BE-->>A: 网络失败
+        A->>C: cacheGet('GET:/api/sessions')
+        C->>IDB: get(key)
+        IDB-->>C: CachedEntry
+        C-->>A: {data, cachedAt}
+        A-->>UI: data (source=cache，UI 显示离线横幅)
+    end
+
+    Note over A,IDB: 写操作透传 + 后台失效
+    UI->>A: api('/sessions/12', 'PATCH', body)
+    A->>BE: fetch PATCH
+    BE-->>A: 200 JSON
+    A->>C: cacheInvalidate('GET:/api/sessions') + ('GET:/api/sessions/12')
+    C->>IDB: delete matching keys
+    A-->>UI: data

@@ -225,6 +225,28 @@ legend { font-size:12px; margin-bottom:13px; }
 .problem-body .markdown p { margin-bottom:16px; }
 .problem-bottom-note { display:flex; align-items:flex-start; gap:8px; border-top:1px solid var(--border); padding-top:19px; margin-top:35px; color:var(--muted); }
 .problem-bottom-note p { font-size:10px; line-height:1.9; }
+.offline-banner { display:flex; align-items:center; gap:8px; padding:10px 22px; background:var(--mint); color:var(--accent); font-size:12px; border-bottom:1px solid var(--border); }
+.library-cache-hint { margin:0 0 18px; color:var(--muted); font-size:11px; }
+.related-problems { border-top:1px solid var(--border); margin-top:26px; padding-top:18px; }
+.related-problems h3 { font-size:13px; font-weight:600; margin:0 0 14px; }
+.related-group { margin-bottom:16px; }
+.related-group-title { display:flex; align-items:center; gap:6px; color:var(--accent); font-size:11px; margin-bottom:8px; }
+.related-group-title svg { color:var(--accent); }
+.related-list { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.related-list li { margin:0; }
+.related-list li > button, .related-list li > div { width:100%; text-align:left; padding:10px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); display:block; }
+.related-list li > button { cursor:pointer; }
+.related-list li > button:hover { border-color:color-mix(in srgb,var(--accent) 50%,var(--border)); }
+.related-item-title { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:500; }
+.related-item-sub { margin-top:3px; color:var(--muted); font-size:10px; line-height:1.6; }
+.related-item-hint { margin-top:5px; color:var(--muted); font-size:9px; }
+.algo-share { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--accent); font-size:10px; cursor:pointer; }
+.algo-share:hover { border-color:var(--accent); }
+.algo-share-msg { color:var(--muted); font-size:9px; align-self:center; }
+.lab-heading-actions { display:flex; align-items:center; gap:12px; }
+.lab-share-button { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; background:var(--surface); color:var(--accent); font-size:11px; cursor:pointer; }
+.lab-share-button:hover { border-color:var(--accent); }
+.lab-share-msg { margin:0 0 14px; color:var(--muted); font-size:11px; }
 .coach-online { display:flex; align-items:center; gap:5px; }
 .coach-online i { width:5px; height:5px; border-radius:50%; background:var(--accent); }
 .stage-path { display:flex; justify-content:space-between; padding:18px 26px; border-bottom:1px solid var(--border); background:var(--bg); flex-shrink:0; }

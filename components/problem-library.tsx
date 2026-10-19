@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '@/lib/api';
 import type { LibraryProblem, ProblemCandidate } from '@/lib/problem-library';
+import { useApiSource } from './use-api-source';
 import Modal from './modal';
 
 export default function ProblemLibrary({ language, initialPaste, onImported, onPractice }: { language: 'cpp' | 'python'; initialPaste?: string; onImported: (paste: string) => void; onPractice: (id: number) => Promise<void> }) {
@@ -14,6 +15,7 @@ export default function ProblemLibrary({ language, initialPaste, onImported, onP
   const [preview, setPreview] = useState<LibraryProblem | null>(null), [candidates, setCandidates] = useState<ProblemCandidate[]>([]), [pending, setPending] = useState('');
   const [deleting, setDeleting] = useState<LibraryProblem | null>(null), [detail, setDetail] = useState<LibraryProblem | null>(null);
   const alive = useRef(true), busy = useRef(false), generation = useRef(0);
+  const apiSource = useApiSource();
   useEffect(() => { alive.current = true; void refresh(); return () => { alive.current = false; generation.current++; }; }, []);
   async function refresh() { try { const value = await api<LibraryProblem[]>('/library'); if (alive.current) setRows(value); } catch (e) { if (alive.current) setError((e as Error).message); } finally { if (alive.current) setLoading(false); } }
   async function action(kind: string, work: () => Promise<void>) {
@@ -33,6 +35,7 @@ export default function ProblemLibrary({ language, initialPaste, onImported, onP
   return <div className="page library-page">
     <div className="page-heading"><div><div className="heading-kicker">PROBLEM LIBRARY</div><h1>我的题库</h1><p>先收好值得练的题，再用自己的节奏解开。</p></div><button className="primary-button" onClick={() => { generation.current++; setOpened(true); setPreview(null); setCandidates([]); setError(''); }}><Plus size={16} />导入题目</button></div>
     <div className="library-summary"><span><strong>{rows.length}</strong> 道已收藏</span><span><strong>{rows.filter(row => row.accepted_at).length}</strong> 道力扣提交通过</span><span>题面与双语模板保存在本机</span></div>
+    {apiSource === 'cache' && <p className="library-cache-hint" role="status">题库数据来自离线缓存，联网后会自动刷新。</p>}
     <div className="records-toolbar"><div className="filter-tabs">{['全部', '简单', '中等', '困难', '已通过'].map(value => <button key={value} className={filter === value ? 'selected' : ''} onClick={() => setFilter(value)}>{value}</button>)}</div><div className="search-input"><Search size={16} /><input aria-label="搜索题库" placeholder="题号、标题或标签" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
     {error && <p className="auth-error" role="alert">{error}</p>}{notice && <p className="auth-message" role="status">{notice}</p>}
     {loading ? <div className="empty-state"><Loader2 className="spin" />正在读取题库</div> : filtered.length ? <div className="library-table"><div className="library-table-head"><span>题目</span><span>难度</span><span>练习 / 状态</span><span>操作</span></div>{filtered.map(row => <article className="library-table-row" key={row.id}><div className="library-title"><small>{row.site === 'manual' ? '本地题目' : `${row.site === 'cn' ? '力扣' : 'LeetCode'} ${row.frontend_id}`}</small><button onClick={() => setDetail(row)}>{row.title}</button><span>{row.tags.join(' · ') || '尚无标签'}</span></div><span className={`problem-difficulty difficulty-${row.difficulty}`}>{row.difficulty}</span><span className="library-progress">{row.accepted_at ? <><Check size={14} />提交通过</> : `${row.practice_count || 0} 次练习`}</span><div className="library-actions"><button className="secondary-button" disabled={Boolean(pending)} onClick={() => void action(row.id, async () => { const result = await api<{ id: number; created_at: string }>(`/library/${row.id}/practice`, 'POST', { language }); if (alive.current) await onPractice(result.id); })}>{pending === row.id ? <Loader2 size={14} className="spin" /> : <ArrowRight size={14} />}开始 / 继续</button><button className="icon-button" aria-label={`移除题库题目${row.title}`} disabled={Boolean(pending)} onClick={() => setDeleting(row)}><Trash2 size={15} /></button></div></article>)}</div> : <div className="empty-state"><span><BookOpen size={30} /></span><h2>{rows.length ? '没有匹配的题目' : '从你想攻克的第一道题开始'}</h2><p>粘贴力扣题面、题号或链接，预览后即可加入题库。</p><button className="primary-button" onClick={() => setOpened(true)}><Plus size={16} />导入题目</button></div>}

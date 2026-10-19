@@ -3,3 +3,4 @@
 // docs/system_design.md so demo/demo.js can consume a stable global object.
 export { ALGORITHMS, DEFAULT_INPUTS, buildTrace, coreCode } from 'zhixu-algo-viz';
 export { ALGORITHM_CATALOG, algorithmName } from 'zhixu-algo-viz';
+export { serializeDemoHash, parseDemoHash } from 'zhixu-algo-viz';

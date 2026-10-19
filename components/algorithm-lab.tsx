@@ -1,9 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, ArrowRight, FlaskConical, Search } from 'lucide-react';
-import { ALGORITHM_CATALOG } from 'zhixu-algo-viz';
-import { ALGORITHMS, type Algorithm } from 'zhixu-algo-viz';
+import { ArrowLeft, ArrowRight, FlaskConical, Search, Share2 } from 'lucide-react';
+import { ALGORITHM_CATALOG, ALGORITHMS, DEFAULT_INPUTS, serializeDemoHash, type Algorithm } from 'zhixu-algo-viz';
 const Demo = dynamic(() => import('./algorithm-demo'), { ssr: false, loading: () => <div className="editor-loading">正在准备算法画布…</div> });
 function Miniature({ id }: { id: Algorithm }) {
   return <svg viewBox="0 0 300 110" aria-hidden="true" className={`lab-miniature miniature-${id}`}>
@@ -14,9 +13,31 @@ function Miniature({ id }: { id: Algorithm }) {
 }
 export default function AlgorithmLab() {
   const [selected, setSelected] = useState<Algorithm | null>(null), [category, setCategory] = useState('全部'), [search, setSearch] = useState(''), [language, setLanguage] = useState<'cpp' | 'python'>('cpp');
+  const [shareMsg, setShareMsg] = useState('');
   useEffect(() => { function read() { const id = new URLSearchParams(location.search).get('algorithm'); setSelected(id && Object.hasOwn(ALGORITHMS, id) ? id as Algorithm : null); } read(); window.addEventListener('popstate', read); return () => window.removeEventListener('popstate', read); }, []);
-  function open(id: Algorithm | null) { setSelected(id); history.pushState({}, '', id ? `/?view=lab&algorithm=${id}` : '/?view=lab'); }
+  function open(id: Algorithm | null) { setSelected(id); setShareMsg(''); history.pushState({}, '', id ? `/?view=lab&algorithm=${id}` : '/?view=lab'); }
+  function copyText(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text; textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed'; textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select(); textarea.setSelectionRange(0, text.length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (ok) resolve(); else reject(new Error('copy failed'));
+      } catch (e) { reject(e); }
+    });
+  }
+  function shareSelected() {
+    if (!selected) return;
+    const hash = serializeDemoHash({ algorithm: selected, input: DEFAULT_INPUTS[selected], index: 0 });
+    const url = `${location.origin}/demo/index.html#${hash}`;
+    copyText(url).then(() => setShareMsg('演示链接已复制'), () => setShareMsg('复制失败，请手动复制链接'));
+  }
   const entries = ALGORITHM_CATALOG.filter(row => (category === '全部' || category === row.category) && (row.title + ALGORITHMS[row.id].name + row.focus.join(' ')).includes(search));
-  if (selected) { const entry = ALGORITHM_CATALOG.find(row => row.id === selected)!; return <div className="page lab-studio"><div className="lab-studio-heading"><button className="text-button" onClick={() => open(null)}><ArrowLeft size={15} />全部演示</button><div><small>{entry.category}</small><h1>{entry.title}</h1></div><div className="language-switch"><button className={language === 'cpp' ? 'selected' : ''} onClick={() => setLanguage('cpp')}>C++</button><button className={language === 'python' ? 'selected' : ''} onClick={() => setLanguage('python')}>Python</button></div></div><Demo key={selected} sessionId={`lab-${selected}`} createdAt="2026-10-14T00:00:00Z" initialAlgorithm={selected} language={language} standalone /></div>; }
+  if (selected) { const entry = ALGORITHM_CATALOG.find(row => row.id === selected)!; return <div className="page lab-studio"><div className="lab-studio-heading"><button className="text-button" onClick={() => open(null)}><ArrowLeft size={15} />全部演示</button><div><small>{entry.category}</small><h1>{entry.title}</h1></div><div className="lab-heading-actions"><button type="button" className="lab-share-button" onClick={shareSelected} aria-label="复制演示链接"><Share2 size={14} />分享演示</button><div className="language-switch"><button className={language === 'cpp' ? 'selected' : ''} onClick={() => setLanguage('cpp')}>C++</button><button className={language === 'python' ? 'selected' : ''} onClick={() => setLanguage('python')}>Python</button></div></div></div>{shareMsg && <p className="lab-share-msg" role="status">{shareMsg}</p>}<Demo key={selected} sessionId={`lab-${selected}`} createdAt="2026-10-14T00:00:00Z" initialAlgorithm={selected} language={language} standalone /></div>; }
   return <div className="page lab-page"><div className="page-heading"><div><div className="heading-kicker">ALGORITHM LAB</div><h1>算法实验室</h1><p>让指针的移动、状态的变化和每一行代码对上号。</p></div><span className="lab-count"><FlaskConical size={17} />{ALGORITHM_CATALOG.length} 个可交互演示</span></div><div className="records-toolbar"><div className="filter-tabs">{['全部', ...new Set(ALGORITHM_CATALOG.map(row => row.category))].map(value => <button key={value} className={category === value ? 'selected' : ''} onClick={() => setCategory(value)}>{value}</button>)}</div><div className="search-input"><Search size={16} /><input value={search} onChange={e => setSearch(e.target.value)} aria-label="搜索算法演示" placeholder="搜索算法或知识点" /></div></div><div className="lab-gallery">{entries.map(entry => <button className="lab-entry" key={entry.id} onClick={() => open(entry.id)}><div className="lab-entry-preview"><span>{entry.category}</span><Miniature id={entry.id} /></div><div className="lab-entry-body"><h2>{entry.title}<ArrowRight size={18} /></h2><p>{entry.description}</p><div className="lab-focus">{entry.focus.map(value => <span key={value}>{value}</span>)}</div><div className="lab-practice"><strong>配套练习</strong>{entry.practice.map(problem => <div key={problem.level} className={`lab-practice-item practice-${problem.level}`}><span>{problem.level}</span><div><b>{problem.title}</b><small>{problem.prompt}</small></div></div>)}</div><footer><span>时间 {ALGORITHMS[entry.id].time}</span><span>C++ / Python</span></footer></div></button>)}</div>{!entries.length && <div className="empty-state"><h2>没有找到这个演示</h2><p>试试算法名称或切换分类。</p></div>}<p className="lab-footnote">修改输入、逐步播放、拖动时间轴。每个算法都配有一道入门理解题和一道强化题；练习题只提供题意，不会伪造提交数据。演示状态单独保存，不会创建或改写做题记录。</p></div>;
 }
