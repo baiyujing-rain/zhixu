@@ -41,9 +41,9 @@ jobs:
         with:
           python-version: '3.13'
       # requirements.txt references `-c constraints-tested.txt` relative to the
-      # file's own directory, so install with `--requirement` from the backend/
-      # directory so the constraint resolves correctly.
-      - run: pip install -r backend/requirements.txt
+      # file's own directory, so install from the backend/ directory so the
+      # constraint resolves correctly (the `-c` path is relative to the CWD).
+      - run: pip install -r requirements.txt
         working-directory: backend
       - run: pytest backend/tests -q
 
