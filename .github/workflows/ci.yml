@@ -17,10 +17,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # test:demo-code compiles the built-in C++ demos with g++ AND runs the
+      # Python snippets, so both toolchains must be present. python is only
+      # needed for this step, hence no cache.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: sudo apt-get update && sudo apt-get install -y g++
       - run: npm ci
       - run: npm run typecheck
       - run: npm run test:algorithms
       - run: npm run test:demo-code
+        env:
+          ZHIXU_PYTHON: python
       - run: npm run build:demo
 
   backend:
@@ -31,7 +40,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      # requirements.txt references `-c constraints-tested.txt` relative to the
+      # file's own directory, so install with `--requirement` from the backend/
+      # directory so the constraint resolves correctly.
       - run: pip install -r backend/requirements.txt
+        working-directory: backend
       - run: pytest backend/tests -q
 
   # Full browser E2E needs a running frontend + backend and Playwright browsers,

@@ -32,8 +32,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:demo
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      # configure-pages fails on private repos (Pages needs a paid plan there),
+      # so only run the Pages-specific steps when the repo is public.
+      - if: ${{ !github.event.repository.private }}
+        uses: actions/configure-pages@v5
+      - if: ${{ !github.event.repository.private }}
+        uses: actions/upload-pages-artifact@v3
         with:
           path: demo
 
@@ -41,6 +45,10 @@ jobs:
     name: Deploy to Pages
     needs: build
     runs-on: ubuntu-latest
+    # GitHub Pages is only available for public repositories on the free plan.
+    # Skip the deploy job (instead of failing) while the repo is private, so
+    # this workflow stays green. Flip the repo to public to activate Pages.
+    if: ${{ !github.event.repository.private }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
