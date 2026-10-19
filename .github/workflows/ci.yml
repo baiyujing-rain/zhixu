@@ -45,11 +45,25 @@ jobs:
       # constraint resolves correctly (the `-c` path is relative to the CWD).
       - run: pip install -r requirements.txt
         working-directory: backend
-      # Verbose mode (-v) is used instead of quiet (-q): on the shared ubuntu
-      # runners the concurrency-heavy tests (test_database_busy, test_review)
-      # are timing-sensitive and -v output has proven stable, while -q can
-      # crash with no diagnostic output. -v also names the failing test.
-      - run: pytest backend/tests -v --tb=short
+      - name: Run pytest with diagnostics
+        run: |
+          set +e
+          python -c "import backend.main" > import.log 2>&1
+          imp=$?
+          pytest backend/tests -v --tb=long > pytest.log 2>&1
+          pt=$?
+          {
+            echo "## backend import exit=$imp"
+            echo '```'
+            cat import.log
+            echo '```'
+            echo "## pytest exit=$pt"
+            echo '```'
+            tail -120 pytest.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ $imp -ne 0 ]; then exit $imp; fi
+          exit $pt
 
   # Full browser E2E needs a running frontend + backend and Playwright browsers,
   # so it is intentionally kept out of the push/PR path. Trigger it manually
