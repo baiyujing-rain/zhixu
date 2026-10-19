@@ -16,3 +16,4 @@ artifacts/
 public/monaco/
 *.tsbuildinfo
 **/credentials.dat
+demo/algos.js

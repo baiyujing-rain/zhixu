@@ -1,0 +1,33 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Node
+node_modules
+.next
+.next-auth-preview
+.next-qa
+out
+*.tsbuildinfo
+public/monaco
+
+# Python
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+
+# Build artifacts & test output
+artifacts
+test-results
+playwright-report
+backups
+
+# Secrets & local data — never bake into images
+.env
+.env.local
+backend/.env
+*.db
+*.db-*
+**/credentials.dat

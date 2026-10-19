@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test:algorithms": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node --test tests/algorithm-traces.test.mjs tests/additional-traces.test.mjs",
     "test:e2e": "playwright test",
-    "test:demo-code": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node scripts/verify-demo-code.mjs"
+    "test:demo-code": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node scripts/verify-demo-code.mjs",
+    "build:demo": "node scripts/build-demo.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",
@@ -27,6 +28,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "esbuild": "^0.25.0"
   }
 }

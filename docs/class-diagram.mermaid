@@ -1,0 +1,94 @@
+classDiagram
+    class DemoInput {
+        +string values
+        +string target
+        +string brackets
+        +string stairs
+        +string window
+        +string grid
+        +string intervals
+    }
+    class Frame {
+        +string phase
+        +string title
+        +string detail
+        +string line
+        +number left
+        +number right
+        +number mid
+        +number sum
+        +number cursor
+        +object[] stack
+        +number[] paired
+        +number matching
+        +object[] dp
+        +number active
+        +number[] dependencies
+        +object[] hashEntries
+        +number needed
+        +number windowEnd
+        +object[] seen
+        +number bestLength
+        +number[] queue
+        +number[] distances
+        +number[] path
+        +number[] array
+        +number[] compareIndices
+        +object[] intervals
+        +number[] selected
+        +object result
+    }
+    class Trace {
+        +string algorithm
+        +Frame[] frames
+        +number[] values
+        +number target
+        +string text
+        +number n
+        +object grid
+    }
+    class CodeLine {
+        +string id
+        +string text
+    }
+    class AlgorithmInfo {
+        +string name
+        +string condition
+        +string principle
+        +string time
+        +string space
+    }
+    class AlgorithmEntry {
+        +string id
+        +string category
+        +string title
+        +string description
+        +string[] focus
+        +object[] practice
+    }
+    class buildTrace {
+        <<function>>
+        +buildTrace(algorithm, input) Trace
+    }
+    class coreCode {
+        <<function>>
+        +coreCode(algorithm, language) CodeLine[]
+    }
+    class DemoViewer {
+        +renderGallery()
+        +openAlgorithm(id)
+        +applyInput(input)
+        +renderScene(frame)
+        +renderCode(line)
+        +step(dir)
+        +play()
+        +pause()
+    }
+
+    Trace "1" *-- "many" Frame
+    buildTrace ..> Trace : returns
+    coreCode ..> CodeLine : returns
+    DemoViewer ..> buildTrace : calls
+    DemoViewer ..> coreCode : calls
+    DemoViewer ..> Trace : renders
+    AlgorithmEntry ..> AlgorithmInfo : references

@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  frontend:
+    name: Frontend (typecheck + tests + demo build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:algorithms
+      - run: npm run test:demo-code
+      - run: npm run build:demo
+
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r backend/requirements.txt
+      - run: pytest backend/tests -q
+
+  # Full browser E2E needs a running frontend + backend and Playwright browsers,
+  # so it is intentionally kept out of the push/PR path. Trigger it manually
+  # from the Actions tab when a full integration pass is required.
+  e2e:
+    name: E2E (manual placeholder)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: echo "E2E placeholder. Run the full integration locally with scripts/qa-start.ps1 and npm run test:e2e (see docs/guide.zh-CN.md)."

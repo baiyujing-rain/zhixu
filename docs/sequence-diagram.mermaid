@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Dev as Engineer
+    participant Script as scripts/build-demo.mjs
+    participant Esbuild as esbuild
+    participant Lib as lib/*.ts
+    participant Browser as Browser(GitHub Pages)
+
+    Dev->>Script: npm run build:demo
+    Script->>Esbuild: build({entry: demo/demo-entry.ts, format: iife, globalName: ZhixuAlgos})
+    Esbuild->>Lib: bundle algorithm-traces / additional-traces / algorithm-catalog
+    Esbuild-->>Script: demo/algos.js
+    Browser->>Browser: load index.html + demo.css + algos.js + demo.js
+    Browser->>Browser: window.ZhixuAlgos.buildTrace(id, DEFAULT_INPUTS[id]) -> frames[]
+    Browser->>Browser: renderScene(frame) + renderCode(frame.line) + controls
