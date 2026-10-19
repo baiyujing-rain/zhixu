@@ -24,19 +24,27 @@ jobs:
   build:
     name: Build demo bundle
     runs-on: ubuntu-latest
+    outputs:
+      public: ${{ steps.visibility.outputs.public }}
     steps:
       - uses: actions/checkout@v4
+      # GitHub Pages is only available for public repositories on the free
+      # plan. The event payload's `repository.private` proved unreliable on
+      # push triggers, so query the API for the authoritative value.
+      - id: visibility
+        run: |
+          private=$(curl -sf "https://api.github.com/repos/${GITHUB_REPOSITORY}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('private'))")
+          echo "repository private=${private}"
+          if [ "${private}" = "False" ]; then echo "public=true" >> "$GITHUB_OUTPUT"; else echo "public=false" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run build:demo
-      # configure-pages fails on private repos (Pages needs a paid plan there),
-      # so only run the Pages-specific steps when the repo is public.
-      - if: ${{ !github.event.repository.private }}
+      - if: steps.visibility.outputs.public == 'true'
         uses: actions/configure-pages@v5
-      - if: ${{ !github.event.repository.private }}
+      - if: steps.visibility.outputs.public == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: demo
@@ -44,11 +52,8 @@ jobs:
   deploy:
     name: Deploy to Pages
     needs: build
+    if: needs.build.outputs.public == 'true'
     runs-on: ubuntu-latest
-    # GitHub Pages is only available for public repositories on the free plan.
-    # Skip the deploy job (instead of failing) while the repo is private, so
-    # this workflow stays green. Flip the repo to public to activate Pages.
-    if: ${{ !github.event.repository.private }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
