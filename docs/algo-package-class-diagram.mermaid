@@ -1,0 +1,115 @@
+classDiagram
+    class AlgoVizAPI {
+        <<facade>> 包公共入口 src/index.ts
+        +ALGORITHMS Record AlgorithmMeta
+        +DEFAULT_INPUTS Record DemoInput
+        +ALGORITHM_CATALOG AlgorithmEntry[]
+        +algorithmName(id) string
+        +buildTrace(algorithm, input) Trace
+        +coreCode(algorithm, language) CodeLine[]
+        +parseValues(text, sorted) number[]
+        +parseGrid(text) Grid
+        +parseIntervals(text) Interval[]
+        +twoPointers(values, target) Trace
+        +binarySearch(values, target) Trace
+        +brackets(text) Trace
+        +stairs(n) Trace
+        +slidingWindow(text) Trace
+        +breadthFirst(grid) Trace
+        +hashTwoSum(values, target) Trace
+        +mergeSort(values) Trace
+        +quickSort(values) Trace
+        +intervalGreedy(intervals) Trace
+    }
+    class DemoInput {
+        +values string
+        +target string
+        +brackets string
+        +stairs string
+        +window string
+        +grid string
+        +intervals string
+    }
+    class AlgorithmMeta {
+        +name string
+        +condition string
+        +principle string
+        +time string
+        +space string
+    }
+    class Trace {
+        +algorithm Algorithm
+        +frames Frame[]
+        +values number[]
+        +target number
+        +text string
+        +n number
+        +grid Grid
+    }
+    class Frame {
+        +phase Phase
+        +title string
+        +detail string
+        +line string
+        +left number
+        +right number
+        +mid number
+        +cursor number
+        +stack StackEntry[]
+        +dp number[]
+        +queue number[]
+        +distances number[]
+        +parents number[]
+        +path number[]
+        +hashEntries HashEntry[]
+        +result number|number[]|boolean|null
+        +array number[]
+        +compareIndices number[]
+        +intervals Interval[]
+        +selected number[]
+    }
+    class Grid {
+        +rows string[]
+        +width number
+        +height number
+        +start number
+        +goal number
+    }
+    class Interval {
+        +start number
+        +end number
+        +index number
+    }
+    class StackEntry {
+        +char string
+        +index number
+    }
+    class CodeLine {
+        +id string
+        +text string
+    }
+    class AlgorithmEntry {
+        +id Algorithm
+        +category string
+        +title string
+        +description string
+        +focus string[]
+        +practice PracticePrompt[]
+    }
+    class PracticePrompt {
+        +level string
+        +title string
+        +prompt string
+    }
+
+    AlgoVizAPI --> Trace : buildTrace()
+    AlgoVizAPI --> CodeLine : coreCode()
+    AlgoVizAPI --> Grid : parseGrid()
+    AlgoVizAPI --> Interval : parseIntervals()
+    AlgoVizAPI --> AlgorithmEntry : ALGORITHM_CATALOG
+    AlgoVizAPI --> AlgorithmMeta : ALGORITHMS
+    Trace "1" *-- "0..*" Frame
+    Trace "0..1" o-- Grid
+    Frame "0..*" o-- StackEntry
+    Frame "0..*" o-- Interval
+    AlgorithmEntry "1" *-- "0..*" PracticePrompt

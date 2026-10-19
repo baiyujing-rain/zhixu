@@ -17,3 +17,4 @@ public/monaco/
 *.tsbuildinfo
 **/credentials.dat
 demo/algos.js
+packages/*/dist/

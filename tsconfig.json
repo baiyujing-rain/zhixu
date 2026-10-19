@@ -32,11 +32,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next-auth-preview/types/**/*.ts",
+    ".next-qa/types/**/*.ts",
     ".next/types/**/*.ts",
-    "next-env.d.ts",
-    ".next-qa/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "packages/**"
   ]
 }

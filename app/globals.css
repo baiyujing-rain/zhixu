@@ -218,6 +218,9 @@ legend { font-size:12px; margin-bottom:13px; }
 .problem-body { padding:22px; overflow-y:auto; flex:1; }
 .problem-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px; }
 .problem-tags>span { color:var(--muted); font-size:9px; background:var(--soft); border:1px solid var(--border); border-radius:4px; padding:3px 7px; }
+.leetcode-source-link { display:inline-flex; align-items:center; gap:6px; font-size:10px; color:var(--accent); text-decoration:none; margin-bottom:16px; }
+.leetcode-source-link:hover { text-decoration:underline; }
+.leetcode-source-hint { display:block; font-size:10px; color:var(--muted); margin-bottom:16px; }
 .problem-body .markdown { white-space:pre-wrap; font-size:12px; line-height:1.95; }
 .problem-body .markdown p { margin-bottom:16px; }
 .problem-bottom-note { display:flex; align-items:flex-start; gap:8px; border-top:1px solid var(--border); padding-top:19px; margin-top:35px; color:var(--muted); }
@@ -584,6 +587,8 @@ body[data-resizing] { user-select:none; }
 .focus-actions>div { position:absolute; right:0; top:35px; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 6px 20px #17251d20; width:135px; padding:6px; }
 .focus-actions button { display:flex; align-items:center; gap:9px; width:100%; padding:9px; font-size:11px; border-radius:4px; white-space:nowrap; }
 .focus-actions button:hover { background:var(--mint); }
+.focus-actions a { display:flex; align-items:center; gap:9px; width:100%; padding:9px; font-size:11px; border-radius:4px; white-space:nowrap; color:var(--text); text-decoration:none; }
+.focus-actions a:hover { background:var(--mint); }
 .ink-preference { margin-top:28px; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap; }
 .deepseek-card h3 { font-size:13px; margin-top:25px; }
 .deepseek-api { margin-top:25px; padding-top:20px; border-top:1px solid var(--border); }

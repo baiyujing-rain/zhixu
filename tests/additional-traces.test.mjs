@@ -1,9 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import traceModule from '../artifacts/trace-test-build/algorithm-traces.js';
-import additional from '../artifacts/trace-test-build/additional-traces.js';
-const { buildTrace, DEFAULT_INPUTS, coreCode } = traceModule;
-const { slidingWindow, breadthFirst, parseGrid, mergeSort, quickSort, intervalGreedy, parseIntervals } = additional;
+import { buildTrace, DEFAULT_INPUTS, coreCode, slidingWindow, breadthFirst, parseGrid, mergeSort, quickSort, intervalGreedy, parseIntervals, hashTwoSum } from '@zhixu/algo-viz';
 
 function codeLines(trace) {
   for (const language of ['cpp', 'python']) {
@@ -160,7 +157,6 @@ test('区间调度按结束时间贪心，结果与穷举最大独立集一致',
 
 
 test('无序两数之和哈希表穷举 42966 例，先查后存、重复值和原始下标正确', () => {
-  const { hashTwoSum } = additional;
   let cases = 0;
   function check(values) {
     for (let target = -5; target <= 5; target++) {

@@ -69,6 +69,33 @@ def identify(value, default_site='cn'):
     return {'site': default_site, 'keyword': keyword, 'number': number.group(1) if number else None, 'title': re.sub(r'^\d+[.、:：)\s-]+', '', first).strip()}
 
 
+def detect(value, default_site='cn'):
+    """Offline, non-fatal problem detection; returns a snapshot dict or None."""
+    try:
+        hint = identify(value, default_site)
+    except HTTPException:
+        return None
+    if hint.get('slug'):
+        slug = hint['slug']
+        return {'site': hint['site'], 'slug': slug, 'frontend_id': None, 'title': slug,
+                'source_url': site_url(hint['site']) + '/problems/' + slug + '/', 'difficulty': None}
+    if not hint.get('number'):
+        return None
+    title = re.sub(r'^(?:(?:LC|LeetCode|力扣)\s*#?\s*)?\d{1,6}[.、:：)\s-]*', '', value.splitlines()[0]).strip()
+    return {'site': hint['site'], 'slug': None, 'frontend_id': hint['number'], 'title': title,
+            'source_url': None, 'difficulty': None}
+
+
+def snapshot(problem):
+    """Normalize a parsed/curated problem into a snapshot; None when there is no slug."""
+    if not problem or not problem.get('slug'):
+        return None
+    return {'site': problem['site'], 'slug': problem['slug'],
+            'frontend_id': str(problem.get('frontend_id') or '') or None,
+            'title': problem.get('title') or '', 'source_url': problem.get('source_url'),
+            'difficulty': problem.get('difficulty')}
+
+
 class ProblemHTML(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)

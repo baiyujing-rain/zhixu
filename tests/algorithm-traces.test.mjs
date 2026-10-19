@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import traceModule from '../artifacts/trace-test-build/algorithm-traces.js';
-const { twoPointers, binarySearch, brackets, stairs, buildTrace, DEFAULT_INPUTS, coreCode } = traceModule;
+import { twoPointers, binarySearch, brackets, stairs, buildTrace, DEFAULT_INPUTS, coreCode } from '@zhixu/algo-viz';
 
 function arrays(length, minimum = -2, prefix = [], output = []) {
   if (!length) { output.push(prefix); return output; }

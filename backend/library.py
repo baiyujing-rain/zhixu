@@ -66,6 +66,10 @@ class PracticeInput(BaseModel):
     fresh: bool = False
 
 
+class LinkInput(BaseModel):
+    site: Literal['cn', 'com'] = 'cn'
+
+
 class JudgeInput(BaseModel):
     request_id: uuid.UUID
     session_id: int = Field(ge=1)
@@ -202,8 +206,25 @@ def library_router(db, LearningSession, LibraryProblem, LibraryLink, JudgeJob, g
         data = problem.data
         drafts = {language: data['code_snippets'].get('cpp' if language == 'cpp' else 'python3') or starter(language, None) for language in ['cpp', 'python']}
         item = LearningSession(title=data['title'], content=data['content'], language=body.language, difficulty=data['difficulty'], tags=data['tags'],
-            drafts=drafts, messages=[{'role': 'assistant', 'content': '题目已经保存。先观察示例和数据范围，写下你的思路；需要帮助时再向教练提问。', 'kind': 'welcome'}])
+            drafts=drafts, messages=[{'role': 'assistant', 'content': '题目已经保存。先观察示例和数据范围，写下你的思路；需要帮助时再向教练提问。', 'kind': 'welcome'}],
+            leetcode=platform.snapshot(data) if data['site'] != 'manual' else None)
         session.add(item); session.flush(); session.add(LibraryLink(session_id=item.id, problem_id=id)); session.commit()
+        return serialize(item)
+
+    @router.post('/sessions/{id}/leetcode/link')
+    async def link_session_leetcode(id: int, body: LinkInput, session=Depends(db)):
+        item = get_session(id, session)
+        value = item.content or item.title
+        try:
+            result = await platform.leetcode.search(value, body.site)
+            problem = result.get('problem')
+            snapshot = platform.snapshot(problem) if problem else platform.detect(value, body.site)
+        except HTTPException:
+            # Online resolution is a non-fatal enhancement; fall back to the
+            # offline detection so a transient LeetCode outage never blocks the record.
+            snapshot = platform.detect(value, body.site)
+        write_session(item, {'leetcode': snapshot}, session)
+        session.commit()
         return serialize(item)
 
     @router.get('/sessions/{id}/leetcode')

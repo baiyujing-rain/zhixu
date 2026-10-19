@@ -1,0 +1,50 @@
+classDiagram
+    class LearningSession {
+        +int id
+        +str title
+        +str content
+        +str language
+        +str example_id
+        +str difficulty
+        +list tags
+        +int stage
+        +str status
+        +dict drafts
+        +list messages
+        +str notes
+        +dict leetcode
+        +datetime created_at
+        +datetime updated_at
+    }
+    class LeetCodeLink {
+        +str site
+        +str slug
+        +str frontend_id
+        +str title
+        +str source_url
+        +str difficulty
+    }
+    class LeetCodeService {
+        +identify(value, default_site) dict
+        +detect(value, default_site) LeetCodeLink
+        +snapshot(problem) LeetCodeLink
+        +search(value, site) dict
+        +site_url(site) str
+    }
+    class MarkdownExporter {
+        +build_markdown(item, reports, session) str
+        +export_markdown(id) Response
+    }
+    class OptimizationReport {
+        +int id
+        +int session_id
+        +str language
+        +str goal
+        +str phase
+        +str input_code
+        +dict data
+    }
+    LearningSession "0..1" o-- LeetCodeLink : leetcode
+    MarkdownExporter --> LearningSession : 读取
+    MarkdownExporter --> OptimizationReport : 读取
+    LeetCodeService --> LeetCodeLink : detect()/snapshot()

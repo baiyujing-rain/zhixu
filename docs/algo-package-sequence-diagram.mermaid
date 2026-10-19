@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Consumer as 主应用 / 静态 demo
+    participant Package as @zhixu/algo-viz (dist/index.mjs)
+    participant Traces as src/algorithm-traces.ts
+    participant Extra as src/additional-traces.ts
+    participant Catalog as src/algorithm-catalog.ts
+
+    Consumer->>Package: buildTrace('two-pointers', input)
+    Package->>Traces: buildTrace(algorithm, input)
+    Traces->>Traces: parseValues(input.values) 解析校验
+    Traces->>Extra: twoPointers(values, target) 按算法分派
+    Extra-->>Traces: Trace { frames[] }
+    Traces-->>Package: Trace
+    Package-->>Consumer: Trace
+
+    Consumer->>Package: coreCode('two-pointers', 'cpp')
+    Package->>Traces: coreCode(...)
+    Traces-->>Consumer: CodeLine[]
+
+    Consumer->>Package: ALGORITHM_CATALOG
+    Package->>Catalog: ALGORITHM_CATALOG
+    Catalog->>Traces: ALGORITHMS
+    Catalog-->>Consumer: AlgorithmEntry[]

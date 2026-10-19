@@ -2,18 +2,27 @@
   "name": "zhixu",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "postinstall": "node scripts/copy-monaco.mjs",
+    "predev": "npm run build -w @zhixu/algo-viz",
     "dev": "next dev --hostname 127.0.0.1",
+    "prebuild": "npm run build -w @zhixu/algo-viz",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
-    "typecheck": "tsc --noEmit",
-    "test:algorithms": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node --test tests/algorithm-traces.test.mjs tests/additional-traces.test.mjs",
+    "typecheck": "npm run build -w @zhixu/algo-viz && tsc --noEmit",
+    "pretest:algorithms": "npm run build -w @zhixu/algo-viz",
+    "test:algorithms": "node --test tests/algorithm-traces.test.mjs tests/additional-traces.test.mjs",
     "test:e2e": "playwright test",
-    "test:demo-code": "tsc lib/algorithm-traces.ts --target ES2020 --module commonjs --skipLibCheck --outDir artifacts/trace-test-build && node scripts/verify-demo-code.mjs",
+    "pretest:demo-code": "npm run build -w @zhixu/algo-viz",
+    "test:demo-code": "node scripts/verify-demo-code.mjs",
+    "prebuild:demo": "npm run build -w @zhixu/algo-viz",
     "build:demo": "node scripts/build-demo.mjs"
   },
   "dependencies": {
+    "@zhixu/algo-viz": "*",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

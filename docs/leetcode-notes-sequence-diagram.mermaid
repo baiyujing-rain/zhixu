@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant UI as 前端 workspace.tsx
+    participant API as FastAPI
+    participant LC as leetcode.py
+    participant DB as SQLite
+
+    Note over UI,DB: ① 建题时离线识别（无网络）
+    UI->>API: POST /api/sessions {content}
+    API->>LC: detect(content)
+    LC-->>API: 快照 {site, frontend_id} | None
+    API->>DB: INSERT learning_sessions(leetcode)
+    API-->>UI: serialize(item)
+
+    Note over UI,DB: ② 点击「关联力扣」在线精确解析
+    UI->>API: POST /api/sessions/{id}/leetcode/link {site}
+    API->>LC: search(content, site)
+    LC-->>API: {problem, candidates}
+    API->>LC: snapshot(problem)
+    API->>DB: UPDATE learning_sessions SET leetcode
+    API-->>UI: serialize(item) 含 source_url
+
+    Note over UI,DB: ③ 导出分享 Markdown
+    UI->>API: GET /api/sessions/{id}/export.md
+    API->>DB: 读 session + optimization_reports
+    API-->>UI: text/markdown 附件

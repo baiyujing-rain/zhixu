@@ -19,6 +19,7 @@ from backend.examples import EXAMPLES, starter
 from backend.chatgpt_auth import auth, router as auth_router
 from backend.credential_store import CredentialStorageError
 from backend.optimization import OptimizeInput, OptimizationPayload, optimization_prompt, report_model, serialize_report
+from backend import leetcode as platform
 
 ROOT = Path(__file__).parent
 def config_path():
@@ -56,6 +57,7 @@ class LearningSession(Base):
     drafts: Mapped[dict] = mapped_column(JSON, default=dict)
     messages: Mapped[list] = mapped_column(JSON, default=list)
     notes: Mapped[str] = mapped_column(Text, default='')
+    leetcode: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -80,6 +82,17 @@ class ExternalExchange(Base):
     prompt: Mapped[str] = mapped_column(Text)
 
 Base.metadata.create_all(engine)
+
+def migrate_leetcode_column():
+    """Idempotent ALTER TABLE for databases created before the leetcode column."""
+    if engine.dialect.name == 'sqlite':
+        with engine.begin() as conn:
+            cols = [row[1] for row in conn.exec_driver_sql('PRAGMA table_info(learning_sessions)')]
+            if 'leetcode' not in cols:
+                conn.exec_driver_sql('ALTER TABLE learning_sessions ADD COLUMN leetcode TEXT')
+
+migrate_leetcode_column()
+
 app = FastAPI(title='知序 API', version='1.0.0')
 app.include_router(auth_router)
 
@@ -132,7 +145,7 @@ def write_session(item, changes, session):
     session.refresh(item)
 
 def serialize(item, detail=True):
-    data = {key: getattr(item, key) for key in ['id', 'title', 'language', 'example_id', 'difficulty', 'tags', 'stage', 'status', 'created_at', 'updated_at']}
+    data = {key: getattr(item, key) for key in ['id', 'title', 'language', 'example_id', 'difficulty', 'tags', 'stage', 'status', 'leetcode', 'created_at', 'updated_at']}
     if detail:
         data.update({key: getattr(item, key) for key in ['content', 'drafts', 'messages', 'notes']})
     return data
@@ -257,7 +270,8 @@ def create_session(body: CreateInput, session: Session = Depends(db)):
     item = LearningSession(title=title, content=content, language=body.language, example_id=body.example_id,
         difficulty=example['difficulty'] if example else '未分类', tags=example['tags'] if example else [],
         drafts={lang: starter(lang, body.example_id) for lang in ['cpp', 'python']},
-        messages=[{'role': 'assistant', 'content': '我们先把题目读清楚。你可以告诉我卡在哪里，或点击「给我一个提示」从理解题目开始。', 'kind': 'welcome'}])
+        messages=[{'role': 'assistant', 'content': '我们先把题目读清楚。你可以告诉我卡在哪里，或点击「给我一个提示」从理解题目开始。', 'kind': 'welcome'}],
+        leetcode=platform.detect(content))
     session.add(item)
     session.commit()
     return serialize(item)
@@ -530,3 +544,6 @@ app.include_router(library_router(db, LearningSession, LibraryProblem, LibraryLi
 
 from backend.archive import archive_router
 app.include_router(archive_router(db, LearningSession, OptimizationReport, Preference, preferences, ReviewPlan, ReviewEvent))
+
+from backend.markdown_export import markdown_router
+app.include_router(markdown_router(db, LearningSession, OptimizationReport, get_session))

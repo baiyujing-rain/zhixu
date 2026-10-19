@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ArrowLeft, ArrowRight, FlaskConical, Search } from 'lucide-react';
-import { ALGORITHM_CATALOG } from '@/lib/algorithm-catalog';
-import { ALGORITHMS, type Algorithm } from '@/lib/algorithm-traces';
+import { ALGORITHM_CATALOG } from '@zhixu/algo-viz';
+import { ALGORITHMS, type Algorithm } from '@zhixu/algo-viz';
 const Demo = dynamic(() => import('./algorithm-demo'), { ssr: false, loading: () => <div className="editor-loading">正在准备算法画布…</div> });
 function Miniature({ id }: { id: Algorithm }) {
   return <svg viewBox="0 0 300 110" aria-hidden="true" className={`lab-miniature miniature-${id}`}>
