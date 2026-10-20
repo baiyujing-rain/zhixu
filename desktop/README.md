@@ -8,7 +8,7 @@
 |---|---|---|
 | 桌面壳 | Tauri 2 + 系统 WebView2 | 体积小；`bundle.resources` 携带后端 exe + 前端目录 |
 | 后端 | PyInstaller 单文件（`console=False`） | 免 Python；固定 `127.0.0.1:8000` |
-| 前端 | Next.js `output:'standalone'` + `node server.js` | 自包含、rewrites 已烘焙；固定 `127.0.0.1:3000` |
+| 前端 | Next.js `output:'standalone'` + 捆绑的 `node.exe server.js` | 自包含、rewrites 已烘焙；固定 `127.0.0.1:3000`；node.exe 随安装包分发，缺省回退 PATH |
 | 生命周期 | `std::process::Command` 自行 spawn/清理 | 退出时 `taskkill /PID <pid> /T /F` 清理进程树 |
 
 前端所有 `/api/*` 请求经 Next `rewrites` 打到 `127.0.0.1:8000`；`BACKEND_URL` 在 `next build` 时被烘焙，桌面构建强制使用默认回环地址。
@@ -16,7 +16,7 @@
 ## 运行环境（用户侧）
 
 - Windows 10/11（通常自带 WebView2 Runtime，缺失请装 [Evergreen 引导安装器](https://developer.microsoft.com/microsoft-edge/webview2/)）
-- **Node.js 22**（前端 sidecar 用 `node server.js`；MVP 明确假设用户已安装）
+- **无需安装 Node.js**（`node.exe` 已随安装包捆绑进 `frontend/`）
 - **无需安装 Python**（后端已打包为 exe）
 
 ## 构建环境（开发者侧）
@@ -52,6 +52,11 @@ npm install
 # 仓库根执行；产物为 NSIS 安装包（免 WiX）
 npm run desktop:build
 ```
+
+> 若网络环境访问 github.com 不稳定（如某些沙箱代理对 github 返回 502），`bundle.ps1` 会自动探测并改用镜像 `gh-proxy.com` 下载 NSIS 工具；也可手动指定：
+> `$env:TAURI_BUNDLER_TOOLS_GITHUB_MIRROR='https://gh-proxy.com/https://github.com/'`
+
+> 构建时默认复制本机 Node 22 的 `node.exe` 进 `desktop/dist/frontend/`；如需指定来源，可先设 `$env:ZHIXU_NODE_EXE='C:\path\to\node.exe'`（缺失时从 npmmirror 自动下载）。
 
 分步：
 

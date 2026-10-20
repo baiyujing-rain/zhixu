@@ -1,6 +1,6 @@
 //! Sidecar process lifecycle management.
 //!
-//! Owns the two child processes (backend exe + frontend `node server.js`) and
+//! Owns the two child processes (backend exe + frontend `node.exe server.js`, 捆绑或回退 PATH) and
 //! guarantees they are torn down on exit via `Drop`. On Windows the process
 //! *tree* is killed with `taskkill /T /F` so that no orphaned grandchildren
 //! survive; on Unix a plain `child.kill()` is used.
@@ -48,6 +48,18 @@ fn kill_tree(child: &mut Child) {
     let _ = child.wait();
 }
 
+/// 构造前端 sidecar 的启动命令：优先使用随安装包捆绑的 node.exe（位于 frontend 目录），
+/// 缺失时回退到 PATH 中的 `node`（开发环境），保证捆绑生效同时不破坏本地开发。
+fn node_command(front: &Path) -> Command {
+    for name in ["node.exe", "node"] {
+        let bundled = front.join(name);
+        if bundled.is_file() {
+            return Command::new(bundled);
+        }
+    }
+    Command::new("node")
+}
+
 fn data_dir() -> PathBuf {
     if cfg!(target_os = "windows") {
         PathBuf::from(std::env::var("APPDATA").unwrap_or_else(|_| ".".into())).join("zhixu")
@@ -91,7 +103,7 @@ pub fn spawn_all(resource_dir: &Path) -> Result<AppProcesses, String> {
         .map_err(|e| format!("无法启动后端：{e}"))?;
 
     let front = resource_dir.join("frontend");
-    let frontend = Command::new("node")
+    let frontend = node_command(&front)
         // 用相对路径配合 current_dir，避免 Windows 下把含盘符的绝对路径传给 node 时被截断。
         .arg("server.js")
         .env("HOSTNAME", "127.0.0.1")
@@ -105,7 +117,7 @@ pub fn spawn_all(resource_dir: &Path) -> Result<AppProcesses, String> {
         .stdout(Stdio::from(frontend_out))
         .stderr(Stdio::from(frontend_err))
         .spawn()
-        .map_err(|e| format!("未找到 Node.js 或前端启动失败（请安装 Node 22）：{e}"))?;
+        .map_err(|e| format!("前端启动失败（捆绑 node.exe 缺失且 PATH 无 node）：{e}"))?;
 
     Ok(AppProcesses { backend, frontend })
 }
@@ -128,7 +140,7 @@ pub fn wait_ready(procs: &mut AppProcesses, timeout: Duration) -> Result<(), Str
             return Err("后端进程提前退出".into());
         }
         if procs.frontend.try_wait().ok().flatten().is_some() {
-            return Err("前端进程提前退出（请安装 Node 22）".into());
+            return Err("前端进程提前退出（检查 %APPDATA%\\zhixu\\logs\\frontend.log）".into());
         }
         std::thread::sleep(Duration::from_millis(500));
     }

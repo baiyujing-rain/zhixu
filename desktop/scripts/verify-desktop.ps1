@@ -29,11 +29,15 @@ $env:HOSTNAME = '127.0.0.1'
 $env:PORT = '3000'
 $env:NODE_ENV = 'production'
 
+# 与 sidecar.rs 一致：优先使用捆绑的 node.exe，缺失时回退 PATH 的 node。
+$nodeExe = Join-Path $frontDir 'node.exe'
+if (-not (Test-Path $nodeExe)) { $nodeExe = 'node' }
+
 $backend = $null
 $frontend = $null
 try {
     $backend = Start-Process -FilePath $backendExe -PassThru -WindowStyle Hidden
-    $frontend = Start-Process -FilePath 'node' -ArgumentList 'server.js' `
+    $frontend = Start-Process -FilePath $nodeExe -ArgumentList 'server.js' `
         -WorkingDirectory $frontDir -PassThru -WindowStyle Hidden
 
     $ok = $false

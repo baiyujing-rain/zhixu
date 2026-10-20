@@ -17,7 +17,7 @@ function portFree(port) {
   });
 }
 
-const requiredFiles = ['server.js'];
+const requiredFiles = ['server.js', ...(process.platform === 'win32' ? ['node.exe'] : [])];
 const requiredDirs = [join('.next', 'static'), 'public'];
 const missing = [
   ...requiredFiles.filter((rel) => !existsSync(join(front, rel)) || !statSync(join(front, rel)).isFile()),

@@ -5,7 +5,7 @@
   "identifier": "com.zhixu.desktop",
   "build": {
     "beforeDevCommand": "node desktop/scripts/build-frontend.mjs",
-    "beforeBuildCommand": "node desktop/scripts/build-frontend.mjs",
+    "beforeBuildCommand": "node desktop/scripts/run-build-frontend.mjs",
     "devUrl": "http://127.0.0.1:3000",
     "frontendDist": "dist"
   },
