@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
   <defs>
-    <linearGradient id="far" x1="1000" y1="180" x2="1050" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#66786B" stop-opacity=".43"/><stop offset=".65" stop-color="#859084" stop-opacity=".16"/><stop offset="1" stop-color="#859084" stop-opacity="0"/></linearGradient>
-    <linearGradient id="middle" x1="1150" y1="350" x2="1250" y2="970" gradientUnits="userSpaceOnUse"><stop stop-color="#405649" stop-opacity=".48"/><stop offset=".6" stop-color="#748275" stop-opacity=".22"/><stop offset="1" stop-color="#748275" stop-opacity="0"/></linearGradient>
-    <linearGradient id="near" x1="1300" y1="560" x2="1250" y2="1000" gradientUnits="userSpaceOnUse"><stop stop-color="#2F4638" stop-opacity=".55"/><stop offset="1" stop-color="#637464" stop-opacity=".05"/></linearGradient>
+    <linearGradient id="far" x1="1000" y1="180" x2="1050" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#5B7A99" stop-opacity=".43"/><stop offset=".65" stop-color="#8FA4B8" stop-opacity=".16"/><stop offset="1" stop-color="#8FA4B8" stop-opacity="0"/></linearGradient>
+    <linearGradient id="middle" x1="1150" y1="350" x2="1250" y2="970" gradientUnits="userSpaceOnUse"><stop stop-color="#3E6E96" stop-opacity=".48"/><stop offset=".6" stop-color="#7D96AC" stop-opacity=".22"/><stop offset="1" stop-color="#7D96AC" stop-opacity="0"/></linearGradient>
+    <linearGradient id="near" x1="1300" y1="560" x2="1250" y2="1000" gradientUnits="userSpaceOnUse"><stop stop-color="#2E5B8A" stop-opacity=".55"/><stop offset="1" stop-color="#6B88A0" stop-opacity=".05"/></linearGradient>
     <filter id="wash" x="-10%" y="-10%" width="120%" height="130%"><feTurbulence type="fractalNoise" baseFrequency=".009 .035" numOctaves="2" seed="12" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="13" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation=".7"/></filter>
     <filter id="mist" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="23"/></filter>
     <filter id="brush" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".02 .1" numOctaves="2" seed="8" result="texture"/><feDisplacementMap in="SourceGraphic" in2="texture" scale="4"/></filter>
@@ -12,13 +12,13 @@
     <path d="M727 871C809 790 848 754 890 677L914 618 940 583 960 594 989 535 1006 510 1029 550 1054 536 1084 584 1118 541 1142 455 1166 442 1190 492 1218 460 1245 487 1271 543 1303 525 1347 609 1375 588 1416 660 1455 633 1500 704 1600 741V1000H727Z" fill="url(#middle)"/>
     <path d="M1009 963C1070 908 1105 884 1142 830L1170 761 1199 745 1225 783 1250 740 1281 659 1300 640 1325 681 1344 669 1373 729 1398 711 1436 757 1469 745 1508 819 1540 801 1600 862V1000H1009Z" fill="url(#near)"/>
   </g>
-  <g stroke="#4B6050" stroke-linecap="round" filter="url(#brush)">
+  <g stroke="#3E6E96" stroke-linecap="round" filter="url(#brush)">
     <path d="M1039 205 1022 305 1000 343 977 441 965 490" stroke-opacity=".18" stroke-width="4"/>
     <path d="M1046 226 1064 316 1092 355 1104 416" stroke-opacity=".12" stroke-width="3"/>
     <path d="M1161 449 1144 538 1118 613 1110 679" stroke-opacity=".22" stroke-width="4"/>
     <path d="M1298 650 1279 733 1255 804" stroke-opacity=".24" stroke-width="5"/>
     <path d="M971 311 987 315M957 345 978 347M951 379 970 381M945 409 967 413" stroke-opacity=".12" stroke-width="2"/>
   </g>
-  <g filter="url(#mist)" fill="#F7F6F0"><ellipse cx="1070" cy="618" rx="395" ry="40" opacity=".7"/><ellipse cx="1218" cy="828" rx="382" ry="43" opacity=".67"/></g>
-  <g stroke="#526250" stroke-width="1.7" stroke-linecap="round" opacity=".35"><path d="M1330 235q13-10 24 0 10-8 20-1M1270 266q9-7 17 0 7-6 14-1"/></g>
+  <g filter="url(#mist)" fill="#EFF5FA"><ellipse cx="1070" cy="618" rx="395" ry="40" opacity=".7"/><ellipse cx="1218" cy="828" rx="382" ry="43" opacity=".67"/></g>
+  <g stroke="#4A7A9C" stroke-width="1.7" stroke-linecap="round" opacity=".35"><path d="M1330 235q13-10 24 0 10-8 20-1M1270 266q9-7 17 0 7-6 14-1"/></g>
 </svg>
