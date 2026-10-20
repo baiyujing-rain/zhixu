@@ -18,3 +18,7 @@ public/monaco/
 **/credentials.dat
 demo/algos.js
 packages/*/dist/
+desktop/dist/
+desktop/build/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/

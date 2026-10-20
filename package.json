@@ -23,7 +23,11 @@
     "pretest:problem-graph": "npm run build -w zhixu-algo-viz",
     "test:problem-graph": "node --test tests/problem-graph.test.mjs",
     "prebuild:demo": "npm run build -w zhixu-algo-viz",
-    "build:demo": "node scripts/build-demo.mjs"
+    "build:demo": "node scripts/build-demo.mjs",
+    "desktop:backend": "powershell -NoProfile -ExecutionPolicy Bypass -File desktop/scripts/build-backend.ps1",
+    "desktop:frontend": "node desktop/scripts/build-frontend.mjs",
+    "desktop:dev": "tauri dev --config desktop/src-tauri/tauri.conf.json",
+    "desktop:build": "powershell -NoProfile -ExecutionPolicy Bypass -File desktop/scripts/bundle.ps1"
   },
   "dependencies": {
     "zhixu-algo-viz": "*",
@@ -42,6 +46,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@playwright/test": "^1.55.0",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "@tauri-apps/cli": "^2"
   }
 }

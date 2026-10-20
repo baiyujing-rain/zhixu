@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 const config: NextConfig = {
+  output: 'standalone',
   devIndicators: false,
   // OAuth renewal, model discovery, and a complete reasoning reply can exceed
   // Next's 30-second rewrite proxy default.

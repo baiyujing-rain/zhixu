@@ -1,0 +1,23 @@
+[package]
+name = "zhixu-desktop"
+version = "0.1.0"
+description = "智序桌面版（Tauri 2 壳）"
+authors = ["zhixu"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 仅 loopback HTTP 健康检查，关闭默认 TLS 特性以减小体积、免 TLS 依赖
+ureq = { version = "2", default-features = false }
+
+[features]
+# Tauri 2 生产构建需要 custom-protocol 特性（frontendDist 桩页由 generate_context 内嵌）
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

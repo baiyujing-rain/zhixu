@@ -1,0 +1,37 @@
+classDiagram
+    class BackendEntry {
+        +app_data_dir() Path
+        +main() None
+    }
+    class FastAPIApp {
+        +app: FastAPI
+    }
+    class Uvicorn {
+        +run(app, host, port, log_level) None
+    }
+    class AppProcesses {
+        +backend: Child
+        +frontend: Child
+        +spawn_all(resource_dir: Path) Result~AppProcesses~
+        +wait_ready(timeout: Duration) Result~()~
+        +kill_all() None
+    }
+    class SidecarModule {
+        +data_dir() PathBuf
+        +kill_tree(child: Child) None
+    }
+    class NodeServer {
+        +server.js: entry
+    }
+    class BuildFrontend {
+        +build() None
+        +collect_standalone() None
+    }
+
+    BackendEntry --> FastAPIApp : imports backend.main
+    BackendEntry --> Uvicorn : uvicorn.run(app)
+    BackendEntry ..> SidecarModule : 注入 DATABASE_URL / ZHIXU_CONFIG_FILE
+    AppProcesses ..> SidecarModule : uses kill_tree / data_dir
+    AppProcesses ..> BackendEntry : spawns zhixu-backend.exe
+    AppProcesses ..> NodeServer : spawns node server.js
+    BuildFrontend ..> NodeServer : 产出 server.js + .next/static + public

@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant User as 用户
+    participant Tauri as Tauri 壳(main.rs)
+    participant Sidecar as sidecar.rs
+    participant BE as zhixu-backend.exe(8000)
+    participant FE as node server.js(3000)
+    participant WebView as WebView 窗口
+
+    User->>Tauri: 双击启动
+    Tauri->>Tauri: setup(): app.path().resource_dir()
+    Tauri->>Sidecar: spawn_all(resource_dir)
+    Sidecar->>BE: spawn zhixu-backend.exe
+    Note over BE: backend_entry.py 注入 DATABASE_URL<br/>与 ZHIXU_CONFIG_FILE 到 %APPDATA%/zhixu/
+    Sidecar->>FE: spawn node server.js (HOSTNAME=127.0.0.1 PORT=3000)
+    Sidecar->>Sidecar: wait_ready(90s)
+    loop 每 500ms
+        Sidecar->>FE: GET http://127.0.0.1:3000/api/health
+        FE->>BE: rewrite /api/* → http://127.0.0.1:8000/api/*
+        BE-->>FE: 200 {status:ok}
+        FE-->>Sidecar: 200
+    end
+    Sidecar-->>Tauri: ready
+    Tauri->>WebView: WebviewWindowBuilder url=http://127.0.0.1:3000
+    WebView->>FE: 加载页面
+    WebView->>FE: 业务请求 /api/*
+    FE->>BE: rewrite 代理
+    BE-->>WebView: JSON 响应
+
+    User->>Tauri: 关闭窗口
+    Tauri->>Sidecar: AppProcesses::Drop → kill_all()
+    Sidecar->>Sidecar: taskkill /PID <pid> /T /F
+    Sidecar-->>Tauri: 子进程已清理

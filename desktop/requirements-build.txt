@@ -1,0 +1,3 @@
+# 桌面版后端打包依赖（仅用于 PyInstaller 构建，不进入 backend/requirements.txt，
+# 该文件由 constraints-tested.txt 锁定运行时版本）。
+pyinstaller>=6.10,<7
