@@ -56,6 +56,10 @@ Pages:
 
 👉 **https://baiyujing-rain.github.io/zhixu/**
 
+**Windows desktop build** — download `Zhixu_1.0.0_x64-setup.exe` from the
+[latest release](https://github.com/baiyujing-rain/zhixu/releases/latest).
+It bundles Node and the Python backend, so no separate runtime is needed.
+
 > If the repository is private, GitHub Pages requires a paid plan. See
 > `docs/guide.zh-CN.md` for the full note and local build instructions.
 
