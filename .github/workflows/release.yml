@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }} · 知序 Zhixu
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## 关于知序
+
+            本地优先的算法学习工作台：引导式提示、十种算法的逐步可视化、离线缓存与复习计划。
+
+            | 入口 | 地址 |
+            | --- | --- |
+            | 静态演示（无需安装） | https://baiyujing-rain.github.io/zhixu/ |
+            | 源码与本地运行 | 见仓库 README |
+
+            ## 快速开始
+
+            ```bash
+            docker compose up --build
+            # 打开 http://127.0.0.1:3000
+            ```
+
+            桌面安装包为本地构建产物（Tauri + NSIS），未随仓库分发；需要时可按
+            `desktop/` 下的脚本自行打包。
+
+            ## 说明
+
+            需要 Node.js 20+ 与 Python 3.11+；AI 功能可选，未配置模型时按提示流程降级运行。
+            本项目以 MIT 许可发布。
