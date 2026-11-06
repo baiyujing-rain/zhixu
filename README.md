@@ -7,11 +7,11 @@ learning log and review notes. 知序 · 让思路先于答案。
 [![CI](https://github.com/baiyujing-rain/zhixu/actions/workflows/ci.yml/badge.svg)](https://github.com/baiyujing-rain/zhixu/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-An ink-wash "algorithm study" — paste a problem, walk the guided path from
+A celadon-blue "algorithm study" — paste a problem, walk the guided path from
 reading the question to your own solution, with deterministic algorithm
 animations along the way.
 
-![Zhixu home — ink-wash algorithm study](docs/images/home.png)
+![Zhixu home — celadon-blue algorithm study](docs/images/home.png)
 
 ## Features
 
